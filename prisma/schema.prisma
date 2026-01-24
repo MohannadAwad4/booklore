@@ -1,0 +1,298 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+
+  
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+
+enum StoryType {
+  BOOK
+  POEM
+  SHORT_STORY
+  SCREENPLAY
+}
+
+enum StoryStatus {
+  DRAFT
+  PUBLISHED
+  INCOMPLETE
+  COMPLETE
+  HIATUS
+}
+enum chapterStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  displayName  String?
+  bio          String?
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+
+  // Optional cached counts
+  followersCount Int @default(0)
+  followingCount Int @default(0)
+
+  // Relations
+  stories          Story[]
+  chapters         Chapter[]
+  comments         Comment[]
+  storyLikes       StoryLike[]
+  chapterLikes     ChapterLike[]
+  commentLikes     CommentLike[]
+  bookmarks        Bookmark[]
+  readingProgress  ReadingProgress[]
+
+  following Follow[] @relation("UserFollowing") // I follow others (as follower)
+  followers Follow[] @relation("UserFollowers") // others follow me (as following)
+  sessions Session[] // User has many Sessions(different devices)
+
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Story {
+  id          String     @id @default(uuid())
+  authorId    String
+  storyType   StoryType
+  title       String
+  description String?
+  status      StoryStatus @default(DRAFT)
+  coverUrl    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  publishedAt DateTime?
+
+  // Optional cached stats
+  chaptersCount  Int @default(0)
+  viewsCount     Int @default(0)
+  likesCount     Int @default(0)
+  commentsCount  Int @default(0)
+  bookmarksCount Int @default(0)
+
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  chapters  Chapter[]
+  comments  Comment[]
+  likes     StoryLike[]
+  bookmarks Bookmark[]
+  tags      StoryTag[]
+  genres    StoryGenre[]
+  progress  ReadingProgress[]
+
+  @@index([authorId, createdAt])
+  @@index([status, publishedAt])
+}
+
+model Chapter {
+  id            String   @id @default(uuid())
+  storyId       String
+  authorId      String
+  chapterNumber Int
+  status chapterStatus @default(DRAFT)
+  title         String
+  content       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  publishedAt   DateTime?
+
+  // Optional cached stats
+  likesCount    Int @default(0)
+  commentsCount Int @default(0)
+  viewsCount    Int @default(0)
+
+  story   Story   @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  author  User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments Comment[]
+  likes    ChapterLike[]
+  progress ReadingProgress[]
+
+  @@unique([storyId, chapterNumber])
+  
+  @@index([storyId, status, chapterNumber]) // reader-facing chapter lists
+  @@index([status, publishedAt])             // feeds / scheduled publishing
+  @@index([authorId])                         // author dashboard
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String
+  storyId   String
+  chapterId String?  // null => story-level comment
+  parentId  String?  // null => top-level comment
+  paragraphIndex Int? // !null => inline comment
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Optional cached stats
+  likesCount   Int @default(0)
+  repliesCount Int @default(0)
+
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story   Story  @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  chapter Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  parent  Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentThread")
+
+  likes   CommentLike[]
+
+  @@index([storyId, createdAt])
+  @@index([chapterId,paragraphIndex, createdAt])
+  @@index([parentId, createdAt])
+  @@index([userId])
+}
+
+model StoryLike {
+  id        String   @id @default(uuid())
+  userId    String
+  storyId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyId])
+  @@index([storyId])
+  @@index([userId])
+}
+
+model ChapterLike {
+  id        String   @id @default(uuid())
+  userId    String
+  chapterId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, chapterId])
+  @@index([chapterId])
+  @@index([userId])
+}
+
+model CommentLike {
+  id        String   @id @default(uuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+  @@index([userId])
+}
+
+model Bookmark {
+  id        String   @id @default(uuid())
+  userId    String
+  storyId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyId])
+  @@index([storyId])
+  @@index([userId])
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  stories StoryTag[]
+}
+
+model StoryTag {
+  id      String @id @default(uuid())
+  storyId String
+  tagId   String
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, tagId])
+  @@index([storyId])
+  @@index([tagId])
+}
+
+model Genre {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  stories StoryGenre[]
+}
+
+model StoryGenre {
+  id      String @id @default(uuid())
+  storyId String
+  genreId String
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  genre Genre @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, genreId])
+  @@index([storyId])
+  @@index([genreId])
+}
+
+model ReadingProgress {
+  id        String   @id @default(uuid())
+  userId    String
+  storyId   String
+  chapterId String?
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story   Story   @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  chapter Chapter? @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, storyId])
+  @@index([userId])
+  @@index([storyId])
+}
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
