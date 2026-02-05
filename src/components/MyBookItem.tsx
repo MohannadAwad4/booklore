@@ -1,14 +1,14 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { StoryType } from "@/lib/types";
-import { DeleteBook } from "@/app/actions/book";
+import { DeleteBook, ChangeBookStatus } from "@/app/actions/book";
 import Form from "next/form";
 
 export default function MyBookItem({ story }: { story: StoryType }) {
+  const router = useRouter();
   const coverSrc = story.coverUrl?.trim() || "/images/default-book-cover.png"; // put this in /public/images/
-
-  const statusLabel = String(story.status).toLowerCase();
 
   const statusClasses =
     story.status === "PUBLISHED"
@@ -18,6 +18,19 @@ export default function MyBookItem({ story }: { story: StoryType }) {
         : story.status === "COMPLETE"
           ? "bg-blue-100 text-blue-700"
           : "bg-gray-100 text-gray-700";
+
+  async function handleStatusSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    await ChangeBookStatus(formData);
+    router.refresh();
+  }
+
+  async function handleDeleteSubmit(formData: FormData) {
+    await DeleteBook(formData);
+    router.refresh();
+  }
 
   return (
     <div>
@@ -52,22 +65,20 @@ export default function MyBookItem({ story }: { story: StoryType }) {
           )}
         </div>
       </Link>
-      <select
-        className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${statusClasses}`}
-      >
-        <option value="DRAFT" selected={story.status === "DRAFT"}>
-          Draft
-        </option>
-        <option value="PUBLISHED" selected={story.status === "PUBLISHED"}>
-          Published
-        </option>
-        <option value="HIATUS" selected={story.status === "HIATUS"}>
-          Hiatus
-        </option>
-        <option value="COMPLETE" selected={story.status === "COMPLETE"}>
-          Complete
-        </option>
-      </select>
+      <form onSubmit={handleStatusSubmit} className="inline">
+        <input type="hidden" name="bookId" value={story.id} />
+        <select
+          name="status"
+          defaultValue={story.status}
+          className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${statusClasses}`}
+        >
+          <option value="DRAFT">Draft</option>
+          <option value="PUBLISHED">Published</option>
+          <option value="HIATUS">Hiatus</option>
+          <option value="COMPLETE">Complete</option>
+        </select>
+        <button type="submit" className="ml-4 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-200">Submit</button>
+      </form>
       <Form action={DeleteBook} className="inline">
         <input type="hidden" name="storyId" value={story.id} />
         <button

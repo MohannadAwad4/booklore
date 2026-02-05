@@ -12,7 +12,7 @@ export async function ChangeBookStatus(formData: FormData) {
   if (!storyId || !status) {
     throw new Error("Missing fields");
   }
-  const story = await prisma.story.update({
+  await prisma.story.update({
     where: {
       id: storyId,
       authorId: user.id,
@@ -22,7 +22,8 @@ export async function ChangeBookStatus(formData: FormData) {
       publishedAt: status === "PUBLISHED" ? new Date() : null,
     },
   });
-  return story;
+  revalidatePath("/book/my-books");
+  return { success: true };
 }
 export async function DeleteBook(formData: FormData) {
   const user = await RequireUser();

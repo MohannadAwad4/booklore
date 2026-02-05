@@ -23,6 +23,7 @@ export default async function MyBooksPage() {
 
   return (
     <div>
+      <Link href="/book/create-book">Create Book</Link>
       {stories.map((story) => (
         <div key={story.id}>
           <MyBookItem story={story} />

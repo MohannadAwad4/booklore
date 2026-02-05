@@ -6,7 +6,7 @@ export default function MenuBar({ editor }) {
   }
 
   return (
-    <div className="border-b border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-800 px-4 py-3 flex flex-wrap gap-1">
+    <div className="flex flex-wrap items-center gap-1">
       {/* Text Formatting */}
       <div className="flex gap-1 border-r border-gray-300 dark:border-neutral-700 pr-2">
         <button
