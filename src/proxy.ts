@@ -6,8 +6,8 @@ export const config = {
   matcher: [
     "/book/create-book",
     "/book/my-books",
-    "/book/:storyId/chapters/:chapterId*",
-    "/book/:storyId/chapters",
+    //"/book/:storyId/chapters/:chapterId*",
+    //"/book/:storyId/chapters",
   ],
 };
 

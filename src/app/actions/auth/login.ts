@@ -38,5 +38,5 @@ export default async function Login(formData: FormData) {
     throw new Error("Invalid credentials");
   }
   await CreateUserSession(user.id);
-  redirect("/book/create-book");
+  redirect("/");
 }

@@ -6,6 +6,8 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import MenuBar from "./menu_bar";
 import { SaveChapterContent } from "@/app/actions/chapter";
+import { PaginationPlus } from "tiptap-pagination-plus";
+import { Placeholder } from '@tiptap/extensions/placeholder'
 
 const defaultContent = "<p>Start writing your story...</p>";
 
@@ -26,8 +28,25 @@ const Editor = ({ chapterId, initialContent }: EditorProps) => {
   lastSavedRef.current = lastSavedContent;
 
   const editor = useEditor({
-    extensions: [StarterKit],
-    content: initial,
+    extensions: [
+      StarterKit,
+      Placeholder,
+      PaginationPlus.configure({
+        pageHeight: 800,
+        pageWidth: 789,
+        pageGap: 50,
+        pageGapBorderSize: 1,
+        pageGapBorderColor: "#e5e5e5",
+        pageBreakBackground: "#ffffff",
+        marginTop: 20,
+        marginBottom: 20,
+        marginLeft: 50,
+        marginRight: 50,
+        contentMarginTop: 10,
+        contentMarginBottom: 10,
+      }),
+    ],
+    content:initial,  
     immediatelyRender: false,
     editorProps: {
       attributes: {
@@ -59,9 +78,19 @@ const Editor = ({ chapterId, initialContent }: EditorProps) => {
       const a = (e.target as Element).closest("a[href]");
       if (!a) return;
       const href = a.getAttribute("href");
-      if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+      if (
+        !href ||
+        href.startsWith("#") ||
+        href.startsWith("mailto:") ||
+        href.startsWith("tel:")
+      )
+        return;
       try {
-        if (new URL(href, window.location.origin).origin !== window.location.origin) return;
+        if (
+          new URL(href, window.location.origin).origin !==
+          window.location.origin
+        )
+          return;
       } catch {
         return;
       }
@@ -117,7 +146,7 @@ const Editor = ({ chapterId, initialContent }: EditorProps) => {
         </p>
       )}
       <div className="flex-1 min-h-0 overflow-y-auto flex justify-center py-8 px-4">
-        <div className="w-full max-w-[816px] min-h-[calc(100vh-12rem)] bg-white dark:bg-neutral-900 shadow-lg rounded-sm py-12 px-16">
+        <div>
           <EditorContent
             editor={editor}
             className="prose prose-lg max-w-none dark:prose-invert focus:outline-none min-h-full [&_.ProseMirror]:min-h-[calc(100vh-16rem)]"

@@ -2,7 +2,10 @@ import { GetUserSession } from "@/app/api/auth/core/session";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import CreateChapter from "@/app/actions/chapter/create-chapter";
-import Link from "next/link";
+
+import MyChapterItem from "@/components/MyChapterItem";
+import BookComments from "@/components/BookComments";
+import AddBookComment from "@/app/actions/book/comment/add-book-comment";
 
 export default async function Chapters({
   params,
@@ -12,16 +15,18 @@ export default async function Chapters({
   const user = await GetUserSession();
   const { storyId } = await params;
 
-  if (!user) {
-    redirect("/auth/login");
-  }
-
   const story = await prisma.story.findUnique({
     where: {
       id: storyId,
     },
   });
-  const userIsAuthor = story?.authorId === user.id;
+  const comments = await prisma.comment.findMany({
+    where: { storyId },
+    include: {
+      user: { select: { username: true, displayName: true } },
+    },
+  });
+  const userIsAuthor = user && story?.authorId === user.id;
 
   const chapters = await prisma.chapter.findMany({
     where: {
@@ -35,10 +40,12 @@ export default async function Chapters({
   if (!chapters || chapters.length === 0) {
     return (
       <div className="p-4">
-        <form action={CreateChapter}>
-          <input type="hidden" name="storyId" value={storyId} />
-          <button type="submit">Create Chapter</button>
-        </form>
+        {userIsAuthor && (
+          <form action={CreateChapter}>
+            <input type="hidden" name="storyId" value={storyId} />
+            <button type="submit">Create Chapter</button>
+          </form>
+        )}
         <h1 className="text-2xl font-bold">No chapters available</h1>
       </div>
     );
@@ -46,21 +53,29 @@ export default async function Chapters({
 
   return (
     <div>
-      <form action={CreateChapter}>
-        <input type="hidden" name="storyId" value={storyId} />
-        <button type="submit">Create Chapter</button>
-      </form>
+      {userIsAuthor && (
+        <form action={CreateChapter}>
+          <input type="hidden" name="storyId" value={storyId} />
+          <button type="submit">Create Chapter</button>
+        </form>
+      )}
       <div>
         {chapters.map((chapter) => (
-          <Link
+          <MyChapterItem
             key={chapter.id}
-            href={`/book/${storyId}/chapters/${chapter.id}`}
-          >
-            {chapter.title}
-            {chapter.status}
-          </Link>
+            chapter={chapter}
+            storyId={storyId}
+            userIsAuthor={userIsAuthor}
+          />
         ))}
       </div>
+      <h2>Comments</h2>
+            <form action={AddBookComment}>
+                <input type="hidden" name="storyId" value={storyId} />
+                <textarea name="content" placeholder="Add a comment" />
+                <button type="submit">Add Comment</button>
+            </form>
+      <BookComments comments={comments} storyId={storyId} />
     </div>
   );
 }

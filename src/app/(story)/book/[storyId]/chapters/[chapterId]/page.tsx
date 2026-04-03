@@ -6,6 +6,7 @@ import Editor from "@/components/rich-text-editor";
 import  Form from "next/form";
 import { UpdateChapter } from "@/app/actions/chapter";
 import ChapterTitle from "@/components/ChapterTitle";
+import PublishedChapterDisplay from "@/components/PublishedChapterDisplay";
 export default async function ChapterEditPage({
   params,
 }: {
@@ -20,11 +21,39 @@ export default async function ChapterEditPage({
   if (!user) redirect("/login");
 
   const chapter = await prisma.chapter.findFirst({
-    where: { id: chapterId, storyId, authorId: user.id },
-    select: { id: true, title: true, content: true },
+    where: { id: chapterId, storyId },
+    select: { id: true, title: true, content: true, status: true, chapterNumber: true },
   });
   if (!chapter) {
     return <div>Chapter not found or you do not have permission to edit it.</div>;
+  }
+
+  // Fetch a few chapters before and after (bounded window), scales to any chapter count
+  const NEARBY = 3;
+  const [prevChapters, nextChapters] = await Promise.all([
+    prisma.chapter.findMany({
+      where: { storyId, status: "PUBLISHED", chapterNumber: { lt: chapter.chapterNumber } },
+      select: { id: true, chapterNumber: true, title: true },
+      orderBy: { chapterNumber: "desc" },
+      take: NEARBY,
+    }),
+    prisma.chapter.findMany({
+      where: { storyId, status: "PUBLISHED", chapterNumber: { gt: chapter.chapterNumber } },
+      select: { id: true, chapterNumber: true, title: true },
+      orderBy: { chapterNumber: "asc" },
+      take: NEARBY,
+    }),
+  ]);
+
+  if (chapter.status === "PUBLISHED") {
+    return (
+      <PublishedChapterDisplay
+        chapter={chapter}
+        storyId={storyId}
+        prevChapters={prevChapters}
+        nextChapters={nextChapters}
+      />
+    );
   }
 
   return (

@@ -9,6 +9,23 @@ export type StoryType = Prisma.StoryGetPayload<{
     authorId: true;
     updatedAt: true;
     coverUrl: true;
-    description
+    description: true;
+    publishedAt: true;
+    createdAt: true;
+  };
+}>;
+
+export type ChapterType = Prisma.ChapterGetPayload<{
+  select: {
+    id: true;
+    title: true;
+    status: true;
+    authorId: true;
+    updatedAt: true;
+    publishedAt: true;
+    content: true;
+    storyId: true;
+    chapterNumber: true;
+    createdAt: true;
   };
 }>;

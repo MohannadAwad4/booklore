@@ -7,7 +7,7 @@ import { StoryStatus } from "@prisma/client";
 export default async function BookFeedPage() {
   const stories = await prisma.story.findMany({
     where: {
-      status: StoryStatus.PUBLISHED,
+      status: { not: StoryStatus.DRAFT },
     },
     orderBy: {
       createdAt: "desc",
@@ -19,7 +19,7 @@ export default async function BookFeedPage() {
   return (
     <div>
       {stories.map((story) => (
-        <Link key={story.id} href={`/book/${story.id}/chapters`}>
+        <Link className="p-2" key={story.id} href={`/book/${story.id}/chapters`}>
           {story.title}
         </Link>
       ))}

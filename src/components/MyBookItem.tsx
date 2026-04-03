@@ -10,7 +10,7 @@ export default function MyBookItem({ story }: { story: StoryType }) {
   const router = useRouter();
   const coverSrc = story.coverUrl?.trim() || "/images/default-book-cover.png"; // put this in /public/images/
 
-  const statusClasses =
+   const statusClasses =
     story.status === "PUBLISHED"
       ? "bg-green-100 text-green-700"
       : story.status === "HIATUS"
@@ -27,10 +27,6 @@ export default function MyBookItem({ story }: { story: StoryType }) {
     router.refresh();
   }
 
-  async function handleDeleteSubmit(formData: FormData) {
-    await DeleteBook(formData);
-    router.refresh();
-  }
 
   return (
     <div>
