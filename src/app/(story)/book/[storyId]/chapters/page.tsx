@@ -4,8 +4,9 @@ import { prisma } from "@/lib/prisma";
 import CreateChapter from "@/app/actions/chapter/create-chapter";
 
 import MyChapterItem from "@/components/MyChapterItem";
-import BookComments from "@/components/BookComments";
+import BookComments from "@/components/comments/BookComments";
 import AddBookComment from "@/app/actions/book/comment/add-book-comment";
+import FollowButton from "@/components/follow/FollowButton";
 
 export default async function Chapters({
   params,
@@ -19,6 +20,17 @@ export default async function Chapters({
     where: {
       id: storyId,
     },
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          displayName: true,
+          followersCount: true,
+          followingCount: true,
+        },
+      },
+    },
   });
   const comments = await prisma.comment.findMany({
     where: { storyId },
@@ -27,6 +39,19 @@ export default async function Chapters({
     },
   });
   const userIsAuthor = user && story?.authorId === user.id;
+
+  let authorFollowInitial = false;
+  if (user && story?.author && user.id !== story.author.id) {
+    const row = await prisma.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: user.id,
+          followingId: story.author.id,
+        },
+      },
+    });
+    authorFollowInitial = !!row;
+  }
 
   const chapters = await prisma.chapter.findMany({
     where: {
@@ -53,6 +78,18 @@ export default async function Chapters({
 
   return (
     <div>
+      {!userIsAuthor && story?.author && (
+        <div className="mb-4 flex flex-wrap items-center gap-4">
+          <p className="text-sm text-muted-foreground">
+            {story.author.followersCount} followers ·{" "}
+            {story.author.followingCount} following
+          </p>
+          <FollowButton
+            targetUserId={story.author.id}
+            isFollowingInitial={authorFollowInitial}
+          />
+        </div>
+      )}
       {userIsAuthor && (
         <form action={CreateChapter}>
           <input type="hidden" name="storyId" value={storyId} />
@@ -70,11 +107,11 @@ export default async function Chapters({
         ))}
       </div>
       <h2>Comments</h2>
-            <form action={AddBookComment}>
-                <input type="hidden" name="storyId" value={storyId} />
-                <textarea name="content" placeholder="Add a comment" />
-                <button type="submit">Add Comment</button>
-            </form>
+      <form action={AddBookComment}>
+        <input type="hidden" name="storyId" value={storyId} />
+        <textarea name="content" placeholder="Add a comment" />
+        <button type="submit">Add Comment</button>
+      </form>
       <BookComments comments={comments} storyId={storyId} />
     </div>
   );

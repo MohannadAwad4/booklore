@@ -3,10 +3,12 @@ import Link from "next/link";
 import { GetUserSession } from "@/app/api/auth/core/session";
 import { prisma } from "@/lib/prisma";
 import Editor from "@/components/rich-text-editor";
-import  Form from "next/form";
+import Form from "next/form";
 import { UpdateChapter } from "@/app/actions/chapter";
+import ChapterComments from "@/components/comments/ChapterComments";
 import ChapterTitle from "@/components/ChapterTitle";
 import PublishedChapterDisplay from "@/components/PublishedChapterDisplay";
+import AddChapterComment from "@/app/actions/book/comment/add-chapter-comments";
 export default async function ChapterEditPage({
   params,
 }: {
@@ -22,23 +24,44 @@ export default async function ChapterEditPage({
 
   const chapter = await prisma.chapter.findFirst({
     where: { id: chapterId, storyId },
-    select: { id: true, title: true, content: true, status: true, chapterNumber: true },
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      status: true,
+      chapterNumber: true,
+    },
   });
   if (!chapter) {
-    return <div>Chapter not found or you do not have permission to edit it.</div>;
+    return (
+      <div>Chapter not found or you do not have permission to edit it.</div>
+    );
   }
-
+  const comments = await prisma.comment.findMany({
+    where: { chapterId },
+    include: {
+      user: { select: { username: true, displayName: true } },
+    },
+  });
   // Fetch a few chapters before and after (bounded window), scales to any chapter count
   const NEARBY = 3;
   const [prevChapters, nextChapters] = await Promise.all([
     prisma.chapter.findMany({
-      where: { storyId, status: "PUBLISHED", chapterNumber: { lt: chapter.chapterNumber } },
+      where: {
+        storyId,
+        status: "PUBLISHED",
+        chapterNumber: { lt: chapter.chapterNumber },
+      },
       select: { id: true, chapterNumber: true, title: true },
       orderBy: { chapterNumber: "desc" },
       take: NEARBY,
     }),
     prisma.chapter.findMany({
-      where: { storyId, status: "PUBLISHED", chapterNumber: { gt: chapter.chapterNumber } },
+      where: {
+        storyId,
+        status: "PUBLISHED",
+        chapterNumber: { gt: chapter.chapterNumber },
+      },
       select: { id: true, chapterNumber: true, title: true },
       orderBy: { chapterNumber: "asc" },
       take: NEARBY,
@@ -47,12 +70,21 @@ export default async function ChapterEditPage({
 
   if (chapter.status === "PUBLISHED") {
     return (
-      <PublishedChapterDisplay
-        chapter={chapter}
-        storyId={storyId}
-        prevChapters={prevChapters}
-        nextChapters={nextChapters}
-      />
+      <div>
+        <PublishedChapterDisplay
+          chapter={chapter}
+          storyId={storyId}
+          prevChapters={prevChapters}
+          nextChapters={nextChapters}
+        />
+        <form action={AddChapterComment}>
+          <input type="hidden" name="chapterId" value={chapterId} />
+          <input type="hidden" name="storyId" value={storyId} />
+          <textarea name="content" placeholder="Add a comment" />
+          <button type="submit">Add Comment</button>
+        </form>
+        <ChapterComments comments={comments} chapterId={chapterId} />
+      </div>
     );
   }
 
@@ -60,8 +92,7 @@ export default async function ChapterEditPage({
     <div className="flex flex-col h-[calc(100vh-5rem)] w-full">
       <header className="flex shrink-0 items-center justify-between gap-4 px-6 py-3 bg-white dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800">
         <ChapterTitle chapterId={chapter.id} title={chapter.title} />
-        
-       
+
         <Link
           href={`/book/${storyId}/chapters`}
           className="shrink-0 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
