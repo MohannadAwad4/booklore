@@ -15,12 +15,16 @@ export default async function NavigationHeader() {
         </Link>
         <nav className="flex gap-6 text-sm text-gray-600 dark:text-gray-400">
         {user?.id && (
+          <div>
             <Link
               href="/book/create-book"
               className="hover:text-gray-900 dark:hover:text-white transition"
             >
               Write
             </Link>
+            <Link href={`/user/${user.id}`} className="hover:text-gray-900 dark:hover:text-white transition">Profile</Link>
+           
+            </div>
           )}
           <Link
             href="/book/my-books"
