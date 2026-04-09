@@ -24,12 +24,17 @@ enum StoryType {
   SCREENPLAY
 }
 
+/** Visibility on the site: draft vs live. */
 enum StoryStatus {
   DRAFT
   PUBLISHED
-  INCOMPLETE
-  COMPLETE
+}
+
+/** Serialized story state (separate from draft/published). */
+enum StoryProgress {
+  ONGOING
   HIATUS
+  COMPLETE
 }
 enum chapterStatus {
   DRAFT
@@ -87,7 +92,8 @@ model Story {
   storyType   StoryType
   title       String
   description String?
-  status      StoryStatus @default(DRAFT)
+  status      StoryStatus   @default(DRAFT)
+  progressStatus StoryProgress @default(ONGOING)
   coverUrl    String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
