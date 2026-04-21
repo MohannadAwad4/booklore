@@ -4,15 +4,16 @@ import useDebounce from "@/hooks/useDebounce";
 import { Story } from "@prisma/client";
 import { useState } from "react";
 import SearchCard from "../cards/SearchCard";
+import { StoryType } from "@/lib/types";
 
 type SearchModalProps = {
   onClose: () => void;
-  stories: Story[];
+  stories: StoryType[];
 };
 
 export default function SearchModal({ onClose, stories }: SearchModalProps) {
   const [search, setSearch] = useState("");
-  const [filteredStories, setFilteredStories] = useState<Story[]>([]);
+  const [filteredStories, setFilteredStories] = useState<StoryType[]>([]);
   console.log("filteredStories", filteredStories);
   const handleSearch = useDebounce((value: string) => {
     const trimmedValue = value.trim().toLowerCase();
@@ -54,7 +55,9 @@ export default function SearchModal({ onClose, stories }: SearchModalProps) {
           autoFocus
         />
         <div className="mt-4 space-y-2">
-         {filteredStories.length === 0 && search.length > 0 && <p>No stories found</p>}
+          {filteredStories.length === 0 && search.length > 0 && (
+            <p>No stories found</p>
+          )}
           {filteredStories.map((story) => (
             <div
               key={story.id}

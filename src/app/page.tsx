@@ -1,8 +1,14 @@
-import Editor from "../components/rich-text-editor";
-
-import Logout from "./actions/auth/logout";
-import Form from "next/form";
 import BookFeedPage from "./(story)/book/feed-books/page";
-export default function Home() {
-  return <BookFeedPage />;
+
+type HomeProps = {
+  searchParams: Promise<{
+    q?: string;
+    category?: string;
+    progress?: string;
+    genres?: string;
+  }>;
+};
+
+export default async function Home({ searchParams }: HomeProps) {
+  return <BookFeedPage searchParams={searchParams} />;
 }

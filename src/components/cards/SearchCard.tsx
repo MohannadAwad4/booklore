@@ -1,7 +1,8 @@
-import { Story } from "@prisma/client";
+
 import Image from "next/image";
 import Link from "next/link";
-export default function SearchCard({story}:{story:Story}){
+import { StoryType } from "@/lib/types";
+export default function SearchCard({story}:{story:StoryType}){
     const coverSrc = story.coverUrl || "/images/default-cover.png";
     return (
         <Link href={`/book/${story.id}/chapters`}>

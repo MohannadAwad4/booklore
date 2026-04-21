@@ -12,6 +12,7 @@ export type StoryType = Prisma.StoryGetPayload<{
     description: true;
     publishedAt: true;
     createdAt: true;
+    storyCategory: true;
   };
 }>;
 
@@ -28,4 +29,8 @@ export type ChapterType = Prisma.ChapterGetPayload<{
     chapterNumber: true;
     createdAt: true;
   };
+}>;
+/** Genres as loaded from the DB for pickers (not the static seed list). */
+export type GenreListItem = Prisma.GenreGetPayload<{
+  select: { id: true; name: true; slug: true };
 }>;

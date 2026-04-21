@@ -2,31 +2,39 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { StoryType } from "@/lib/types";
-import { DeleteBook, ChangeBookStatus } from "@/app/actions/book";
+import type { GenreListItem, StoryType } from "@/lib/types";
+import { DeleteBook } from "@/app/actions/book";
+import { useEffect, useState } from "react";
 import Form from "next/form";
+import PublishBookModal from "./modals/PublishBook.modal";
 
-export default function MyBookItem({ story }: { story: StoryType }) {
+export default function MyBookItem({
+  story,
+  genres,
+}: {
+  story: StoryType;
+  genres: GenreListItem[];
+}) {
   const router = useRouter();
   const coverSrc = story.coverUrl?.trim() || "/images/default-book-cover.png"; // put this in /public/images/
-
-   const statusClasses =
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState<boolean>(false);
+  const statusClasses =
     story.status === "PUBLISHED"
       ? "bg-green-100 text-green-700"
-      : story.status === "HIATUS"
-        ? "bg-yellow-100 text-yellow-700"
-        : story.status === "COMPLETE"
-          ? "bg-blue-100 text-blue-700"
-          : "bg-gray-100 text-gray-700";
+      : "bg-gray-100 text-gray-700";
 
-  async function handleStatusSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    await ChangeBookStatus(formData);
-    router.refresh();
-  }
+  // prevent scrolling when the modal is open
+  useEffect(() => {
+    if (isPublishModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
 
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isPublishModalOpen]);
 
   return (
     <div>
@@ -61,20 +69,22 @@ export default function MyBookItem({ story }: { story: StoryType }) {
           )}
         </div>
       </Link>
-      <form onSubmit={handleStatusSubmit} className="inline">
-        <input type="hidden" name="bookId" value={story.id} />
-        <select
-          name="status"
-          defaultValue={story.status}
-          className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${statusClasses}`}
+
+      <label
+        defaultValue={story.status}
+        className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${statusClasses}`}
+      >
+        {story.status === "PUBLISHED" ? "Published" : "Draft"}
+      </label>
+      {story.status != "PUBLISHED" && (
+        <button
+          onClick={() => setIsPublishModalOpen((prev) => true)}
+          className="ml-4 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
         >
-          <option value="DRAFT">Draft</option>
-          <option value="PUBLISHED">Published</option>
-          <option value="HIATUS">Hiatus</option>
-          <option value="COMPLETE">Complete</option>
-        </select>
-        <button type="submit" className="ml-4 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-200">Submit</button>
-      </form>
+          Publish
+        </button>
+      )}
+
       <Form action={DeleteBook} className="inline">
         <input type="hidden" name="storyId" value={story.id} />
         <button
@@ -84,6 +94,13 @@ export default function MyBookItem({ story }: { story: StoryType }) {
           Delete Book
         </button>
       </Form>
+      {isPublishModalOpen && (
+        <PublishBookModal
+          story={story}
+          genres={genres}
+          onClose={() => setIsPublishModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -12,15 +12,20 @@ export default async function MyBooksPage() {
     redirect("/login");
   }
 
-  const stories = await prisma.story.findMany({
-    where: {
-      authorId: user.id,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-  //here will be a publish button
+  const [stories, genres] = await Promise.all([
+    prisma.story.findMany({
+      where: {
+        authorId: user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+    prisma.genre.findMany({
+      select: { id: true, name: true, slug: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-8">
@@ -32,12 +37,10 @@ export default async function MyBooksPage() {
         <ImportBook />
       </section>
       <Link href="/book/create-book">Create Book</Link>
-      {(!stories || stories.length === 0) && (
-        <div>No books found</div>
-      )}
+      {(!stories || stories.length === 0) && <div>No books found</div>}
       {stories.map((story) => (
         <div key={story.id}>
-          <MyBookItem story={story} />
+          <MyBookItem story={story} genres={genres} />
         </div>
       ))}
     </div>

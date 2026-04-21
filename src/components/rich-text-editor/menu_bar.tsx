@@ -1,6 +1,12 @@
 "use client";
 
-export default function MenuBar({ editor }) {
+import type { Editor } from "@tiptap/core";
+
+type MenuBarProps = {
+  editor: Editor | null;
+};
+
+export default function MenuBar({ editor }: MenuBarProps) {
   if (!editor) {
     return null;
   }

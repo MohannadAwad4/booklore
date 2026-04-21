@@ -1,0 +1,9 @@
+-- CreateEnum
+CREATE TYPE "CopyrightType" AS ENUM ('ALL_RIGHTS_RESERVED', 'PUBLIC_DOMAIN', 'CC_BY', 'CC_BY_NC', 'CC_BY_NC_ND', 'CC_BY_SA', 'CC_BY_NC_SA');
+
+-- CreateEnum
+CREATE TYPE "StoryLanguage" AS ENUM ('ENGLISH', 'MANDARIN', 'HINDI', 'SPANISH', 'FRENCH', 'ARABIC', 'BENGALI', 'PORTUGUESE', 'RUSSIAN', 'URDU', 'ITALIAN', 'NORWEGIAN', 'THAI');
+
+-- AlterTable
+ALTER TABLE "Story" ADD COLUMN     "copyrightType" "CopyrightType" NOT NULL DEFAULT 'ALL_RIGHTS_RESERVED',
+ADD COLUMN     "storyLanguage" "StoryLanguage" NOT NULL DEFAULT 'ENGLISH';

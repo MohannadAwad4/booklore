@@ -15,13 +15,40 @@ datasource db {
 }
 
 
-
+enum CopyrightType {
+  ALL_RIGHTS_RESERVED
+  PUBLIC_DOMAIN
+  CC_BY
+  CC_BY_NC
+  CC_BY_NC_ND
+  CC_BY_SA
+  CC_BY_NC_SA
+}
+enum StoryLanguage {
+  ENGLISH
+  MANDARIN
+  HINDI
+  SPANISH
+  FRENCH
+  ARABIC
+  BENGALI
+  PORTUGUESE
+  RUSSIAN
+  URDU
+  ITALIAN
+  NORWEGIAN
+  THAI
+}
 
 enum StoryType {
   BOOK
   POEM
   SHORT_STORY
   SCREENPLAY
+}
+enum StoryCategory {
+  FICTION
+  NON_FICTION
 }
 
 /** Visibility on the site: draft vs live. */
@@ -90,10 +117,13 @@ model Story {
   id          String     @id @default(uuid())
   authorId    String
   storyType   StoryType
+  storyCategory StoryCategory @default(FICTION)
   title       String
   description String?
   status      StoryStatus   @default(DRAFT)
   progressStatus StoryProgress @default(ONGOING)
+  copyrightType CopyrightType @default(ALL_RIGHTS_RESERVED)
+  storyLanguage StoryLanguage @default(ENGLISH)
   coverUrl    String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -259,6 +289,7 @@ model StoryTag {
 model Genre {
   id        String   @id @default(uuid())
   name      String   @unique
+  slug      String   @unique
   createdAt DateTime @default(now())
 
   stories StoryGenre[]
