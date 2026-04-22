@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { BookOpen } from "lucide-react";
 
 const DEFAULT_ACCEPT = "image/png,image/jpeg,image/jpg,image/webp";
 
@@ -32,6 +33,7 @@ export default function CoverImageUpload({
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [initialLoadFailed, setInitialLoadFailed] = useState(false);
 
   function setPreviewUrl(next: string | null) {
     if (previewUrlRef.current) {
@@ -47,6 +49,10 @@ export default function CoverImageUpload({
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    setInitialLoadFailed(false);
+  }, [initialImageUrl]);
 
   function applyFile(file: File | undefined | null, input: HTMLInputElement) {
     setError(null);
@@ -123,11 +129,22 @@ export default function CoverImageUpload({
         className="w-full rounded-xl border-2 border-dashed border-gray-300 dark:border-neutral-600 hover:border-gray-400 dark:hover:border-neutral-500 transition-colors bg-gray-50 dark:bg-neutral-800/50 overflow-hidden min-h-[200px] flex flex-col items-center justify-center gap-2 p-6 disabled:opacity-60 disabled:pointer-events-none"
       >
         {initialImageUrl && !preview && (
-          <img
-            src={initialImageUrl}
-            alt="Cover preview"
-            className="max-h-40 w-auto object-contain rounded-lg"
-          />
+          initialLoadFailed ? (
+            <div className="flex max-h-40 min-h-[10rem] w-full items-center justify-center rounded-lg bg-muted">
+              <BookOpen
+                className="size-16 text-muted-foreground"
+                strokeWidth={1.25}
+                aria-hidden
+              />
+            </div>
+          ) : (
+            <img
+              src={initialImageUrl}
+              alt="Cover preview"
+              className="max-h-40 w-auto object-contain rounded-lg"
+              onError={() => setInitialLoadFailed(true)}
+            />
+          )
         )}
         {preview ? (
           <>
@@ -142,12 +159,11 @@ export default function CoverImageUpload({
           </>
         ) : (
           <>
-            <span
-              className="text-4xl text-gray-400 dark:text-gray-500"
+            <BookOpen
+              className="size-14 text-gray-400 dark:text-gray-500"
+              strokeWidth={1.25}
               aria-hidden
-            >
-              📖
-            </span>
+            />
             <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
               Click to upload or drag and drop
             </span>

@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import NavigationHeader from "@/components/nav_header";
+import NavigationHeaderGate from "@/components/NavigationHeaderGate";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import {ThemeProvider} from "next-themes"
+import { ThemeProvider } from "next-themes";
+import { Toaster } from "sonner";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,8 +33,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <NavigationHeader />
+          <NavigationHeaderGate>
+            <NavigationHeader />
+          </NavigationHeaderGate>
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

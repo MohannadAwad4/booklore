@@ -1,5 +1,6 @@
 "use client";
-import Image from "next/image";
+import ImageWithFallback from "@/components/ImageWithFallback";
+import { BookCoverPlaceholder } from "@/components/media-placeholders";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { GenreListItem, StoryType } from "@/lib/types";
@@ -16,7 +17,7 @@ export default function MyBookItem({
   genres: GenreListItem[];
 }) {
   const router = useRouter();
-  const coverSrc = story.coverUrl?.trim() || "/images/default-book-cover.png"; // put this in /public/images/
+  const coverSrc = story.coverUrl?.trim() || null;
   const [isPublishModalOpen, setIsPublishModalOpen] = useState<boolean>(false);
   const statusClasses =
     story.status === "PUBLISHED"
@@ -42,13 +43,15 @@ export default function MyBookItem({
         href={`/book/${story.id}/chapters`}
         className="group flex gap-4 rounded-xl border p-3 hover:bg-gray-50 transition"
       >
-        <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-lg border bg-gray-100">
-          <Image
+        <div className="relative aspect-[2/3] w-16 shrink-0 overflow-hidden rounded-lg border bg-muted">
+          <ImageWithFallback
             src={coverSrc}
+            fallback={<BookCoverPlaceholder className="size-10 text-muted-foreground" />}
             alt={`${story.title} cover`}
             fill
-            className="object-cover"
-            sizes="64px"
+            quality={88}
+            className="object-contain object-center"
+            sizes="128px"
           />
         </div>
 

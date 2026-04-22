@@ -1,10 +1,11 @@
 "use client";
 
 import { StoryStatus, type Story } from "@prisma/client";
-import Image from "next/image";
+import ImageWithFallback from "@/components/ImageWithFallback";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { EllipsisVertical, Heart } from "lucide-react";
+import { BookCoverPlaceholder } from "@/components/media-placeholders";
 import { BookMarkBook, LikeStory } from "@/app/actions/book";
 
 function formatReads(n: number): string {
@@ -28,16 +29,14 @@ export default function BookCard({
   initialBookmarked = false,
   initialLiked = false,
 }: BookCardProps) {
-  const coverSrc = story.coverUrl?.trim() || "/images/default-cover.png";
-  const canInteract =
-    !!viewerUserId && story.status === StoryStatus.PUBLISHED;
+  const coverSrc = story.coverUrl?.trim() || null;
+  const canInteract = !!viewerUserId && story.status === StoryStatus.PUBLISHED;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [liked, setLiked] = useState(initialLiked);
   const [pending, startTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
-
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
@@ -96,12 +95,14 @@ export default function BookCard({
           className="absolute inset-0 z-0 block"
           aria-label={`Open ${story.title}`}
         >
-          <Image
+          <ImageWithFallback
             src={coverSrc}
+            fallback={<BookCoverPlaceholder />}
             alt=""
             fill
-            className="object-cover object-center transition duration-300 ease-out group-hover/cover:scale-[1.03]"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, (max-width: 1280px) 16vw, 12vw"
+            quality={88}
+            className="object-contain object-center transition duration-200 ease-out"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1536px) 22vw, 320px"
           />
         </Link>
 
@@ -123,7 +124,10 @@ export default function BookCard({
                 aria-haspopup="menu"
                 aria-label="Book actions"
               >
-                <EllipsisVertical className="h-[18px] w-[18px]" strokeWidth={2} />
+                <EllipsisVertical
+                  className="h-[18px] w-[18px]"
+                  strokeWidth={2}
+                />
               </button>
               {menuOpen ? (
                 <div

@@ -4,6 +4,7 @@ import { GetUserSession } from "@/app/api/auth/core/session";
 import Link from "next/link";
 import MyBookItem from "@/components/MyBookItem";
 import ImportBook from "@/components/book-import/ImportBook";
+import CreateBook from "@/components/book-import/CreateBook";
 
 export default async function MyBooksPage() {
   const user = await GetUserSession();
@@ -36,7 +37,8 @@ export default async function MyBooksPage() {
         </p>
         <ImportBook />
       </section>
-      <Link href="/book/create-book">Create Book</Link>
+      <CreateBook  />
+      {/* <Link href="/book/create-book">Create Book</Link> */}
       {(!stories || stories.length === 0) && <div>No books found</div>}
       {stories.map((story) => (
         <div key={story.id}>

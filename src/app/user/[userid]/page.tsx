@@ -3,11 +3,13 @@ import { prisma } from "@/lib/prisma";
 import type { Story } from "@prisma/client";
 import { notFound } from "next/navigation";
 import TabRoot from "@/components/profile/(tabs)/TabRoot";
-import Image from "next/image";
+import ImageWithFallback from "@/components/ImageWithFallback";
+import { AvatarPlaceholder } from "@/components/media-placeholders";
 import Link from "next/link";
 import { GetUserSession } from "@/app/api/auth/core/session";
 import FollowButton from "@/components/follow/FollowButton";
 import { isFollowing } from "@/lib/isFollowing";
+import Section from "@/components/profile/Section";
 
 export default async function ProfilePage({
   params,
@@ -72,11 +74,13 @@ export default async function ProfilePage({
   return (
     <div className="mx-auto max-w-xl space-y-4 p-6">
       <div>
-        <Image
-          src={user.avatarUrl ? user.avatarUrl : "/images/default-avatar.png"}
+        <ImageWithFallback
+          src={user.avatarUrl?.trim() || null}
+          fallback={<AvatarPlaceholder className="size-14 text-muted-foreground" />}
           alt={user.displayName?.trim() || user.username}
           width={100}
           height={100}
+          className="rounded-full object-cover ring-1 ring-border"
         />
         <h1 className="text-2xl font-bold">
           {user.displayName?.trim() || user.username}
@@ -85,6 +89,7 @@ export default async function ProfilePage({
         <p className="text-muted-foreground">@{user.username}</p>
       </div>
       <h1 className="text-1xl ">{user.bio ?? ""}</h1>
+      <Section followers={user.followersCount} following={user.followingCount} />
       <p className="text-sm text-muted-foreground">
         <span className="font-medium text-foreground">
           {user.followersCount}

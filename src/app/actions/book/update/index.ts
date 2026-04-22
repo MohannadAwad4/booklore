@@ -20,7 +20,21 @@ async function assertAuthorStory(userId: string, storyId: string) {
     throw new Error("Book not found or unauthorized");
   }
 }
+export async function UpdateBookTitle(formData:FormData){
+  const user = await RequireUser();
+  const storyId = formData.get("storyId") as string;
 
+  const newTitle = formData.get('title') as string;
+  if (!storyId || !newTitle) {
+    throw new Error("Missing storyId or title");
+  }
+  await assertAuthorStory(user.id, storyId);
+  await prisma.story.update({
+    where: { id: storyId },
+    data: { title: newTitle },
+  });
+  revalidateBookPaths(storyId);
+}
 /** Author-only: update description / blurb only. */
 export async function UpdateBookDescription(formData: FormData) {
   const user = await RequireUser();

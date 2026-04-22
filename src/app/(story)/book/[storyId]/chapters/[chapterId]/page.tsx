@@ -19,8 +19,8 @@ export default async function ChapterEditPage({
     return <div>Invalid story or chapter ID</div>;
   }
 
-  const user = await GetUserSession();
-  if (!user) redirect("/login");
+  // const user = await GetUserSession();
+  // if (!user) redirect("/login");
 
   const chapter = await prisma.chapter.findFirst({
     where: { id: chapterId, storyId },
@@ -37,35 +37,21 @@ export default async function ChapterEditPage({
       <div>Chapter not found or you do not have permission to edit it.</div>
     );
   }
-  const comments = await prisma.comment.findMany({
-    where: { chapterId },
-    include: {
-      user: { select: { username: true, displayName: true } },
-    },
-  });
-  // Fetch a few chapters before and after (bounded window), scales to any chapter count
-  const NEARBY = 3;
-  const [prevChapters, nextChapters] = await Promise.all([
-    prisma.chapter.findMany({
-      where: {
-        storyId,
-        status: "PUBLISHED",
-        chapterNumber: { lt: chapter.chapterNumber },
+  const isPublished = chapter.status === "PUBLISHED";
+  const [comments, allChapters] = await Promise.all([
+    prisma.comment.findMany({
+      where: { chapterId },
+      include: {
+        user: { select: { username: true, displayName: true } },
       },
-      select: { id: true, chapterNumber: true, title: true },
-      orderBy: { chapterNumber: "desc" },
-      take: NEARBY,
     }),
-    prisma.chapter.findMany({
-      where: {
-        storyId,
-        status: "PUBLISHED",
-        chapterNumber: { gt: chapter.chapterNumber },
-      },
-      select: { id: true, chapterNumber: true, title: true },
-      orderBy: { chapterNumber: "asc" },
-      take: NEARBY,
-    }),
+    isPublished
+      ? prisma.chapter.findMany({
+          where: { storyId, status: "PUBLISHED" },
+          select: { id: true, chapterNumber: true, title: true },
+          orderBy: { chapterNumber: "asc" },
+        })
+      : Promise.resolve([]),
   ]);
 
   if (chapter.status === "PUBLISHED") {
@@ -74,8 +60,7 @@ export default async function ChapterEditPage({
         <PublishedChapterDisplay
           chapter={chapter}
           storyId={storyId}
-          prevChapters={prevChapters}
-          nextChapters={nextChapters}
+          chapters={allChapters}
         />
         <form action={AddChapterComment}>
           <input type="hidden" name="chapterId" value={chapterId} />

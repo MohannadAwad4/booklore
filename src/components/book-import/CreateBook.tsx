@@ -8,6 +8,8 @@ import CoverImageUpload from "@/components/CoverImageUpload";
 export default function CreateBookForm() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [title, setTitle] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -24,12 +26,15 @@ export default function CreateBookForm() {
   }
 
   return (
+    <>
+    <button className="bg-button text-button-foreground" type="button" onClick={() => setIsOpen(true)}>Create Book</button>
+    {isOpen && (
     <form
       onSubmit={handleSubmit}
       encType="multipart/form-data"
       className="p-6 space-y-6"
     >
-      <CoverImageUpload />
+     
 
       {/* Title */}
       <div>
@@ -40,6 +45,8 @@ export default function CreateBookForm() {
           id="create-book-title"
           type="text"
           name="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           required
           placeholder="Enter book title"
           className="w-full rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white placeholder:text-gray-400 px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
@@ -71,13 +78,10 @@ export default function CreateBookForm() {
         >
           {submitting ? "Creating…" : "Create book"}
         </button>
-        <Link
-          href="/book/my-books"
-          className="rounded-lg border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-300 font-medium py-3 px-4 hover:bg-gray-50 dark:hover:bg-neutral-700 transition"
-        >
-          Cancel
-        </Link>
+        <button  type="button" onClick={() => setIsOpen(false)}>Cancel</button>
       </div>
     </form>
+    )}
+    </>
   );
 }

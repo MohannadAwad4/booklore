@@ -4,6 +4,7 @@ import SetChapterStatus from "@/app/actions/chapter";
 import { ChapterType } from "@/lib/types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { StoryStatus } from "@prisma/client";
 
 export default function MyChapterItem({ chapter, storyId, userIsAuthor }: { chapter: ChapterType, storyId: string, userIsAuthor: boolean | null }) {
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function MyChapterItem({ chapter, storyId, userIsAuthor }: { chap
 
   return (
     <div>
-      <Link href={`/book/${chapter.storyId}/chapters/${chapter.id}`}>
+      <Link href={userIsAuthor && chapter.status ===StoryStatus.DRAFT ? `/book/${chapter.storyId}/chapters/${chapter.id}/write` : `/book/${chapter.storyId}/chapters/${chapter.id}`}>
         {chapter.title}
         
       </Link>
