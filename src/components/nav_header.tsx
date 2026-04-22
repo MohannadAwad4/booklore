@@ -2,6 +2,7 @@ import Form from "next/form";
 import Logout from "@/app/actions/auth/logout";
 import Link from "next/link";
 import { GetUserSession } from "@/app/api/auth/core/session";
+import ThemeToggle from "./ThemeToggle";
 export default async function NavigationHeader() {
   const user = await GetUserSession();
   return (
@@ -26,6 +27,7 @@ export default async function NavigationHeader() {
            
             </div>
           )}
+          <ThemeToggle />
           <Link
             href="/book/my-books"
             className="hover:text-gray-900 dark:hover:text-white transition"
