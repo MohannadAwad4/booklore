@@ -1,4 +1,4 @@
-import ImageWithFallback from "@/components/ImageWithFallback";
+
 import Link from "next/link";
 import { StoryType } from "@/lib/types";
 import { BookCoverPlaceholder } from "@/components/media-placeholders";
@@ -8,15 +8,16 @@ export default function SearchCard({ story }: { story: StoryType }) {
   return (
     <Link href={`/book/${story.id}/chapters`} className="flex gap-3">
       <div className="relative aspect-[2/3] w-[72px] shrink-0 overflow-hidden rounded-md bg-muted ring-1 ring-border">
-        <ImageWithFallback
-          src={coverSrc}
-          fallback={<BookCoverPlaceholder className="size-10 text-muted-foreground" />}
-          alt={story.title}
-          fill
-          quality={88}
-          className="object-contain object-center"
-          sizes="144px"
-        />
+        {coverSrc ? (
+          <img
+            src={coverSrc}
+            alt={story.title}
+            className="object-contain object-center"
+            sizes="144px"
+          />
+        ) : (
+          <BookCoverPlaceholder className="size-10 text-muted-foreground" />
+        )}
       </div>
       <div className="min-w-0">
         <h3>{story.title}</h3>

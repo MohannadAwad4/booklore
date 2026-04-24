@@ -56,7 +56,7 @@ export async function addLikeComment(formData: FormData) {
       });
     });
     revalidateCommentPaths(comment);
-    return { liked: false as const };
+    return;
   }
 
   await prisma.$transaction(async (tx) => {
@@ -70,5 +70,5 @@ export async function addLikeComment(formData: FormData) {
   });
 
   revalidateCommentPaths(comment);
-  return { liked: true as const };
+ return;
 }

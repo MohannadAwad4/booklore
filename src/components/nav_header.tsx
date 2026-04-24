@@ -6,31 +6,31 @@ import ThemeToggle from "./ThemeToggle";
 export default async function NavigationHeader() {
   const user = await GetUserSession();
   return (
-    <header className="border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <header className="border-b border-border bg-background">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link
           href="/"
-          className="text-2xl font-bold text-gray-900 dark:text-white"
+          className="text-2xl font-bold text-foreground"
         >
           Lore
         </Link>
-        <nav className="flex gap-6 text-sm text-gray-600 dark:text-gray-400">
+        <nav className="flex gap-6 text-sm text-muted-foreground">
         {user?.id && (
           <div>
             <Link
               href="/book/create-book"
-              className="hover:text-gray-900 dark:hover:text-white transition"
+              className="transition hover:text-foreground"
             >
               Write
             </Link>
-            <Link href={`/user/${user.id}`} className="hover:text-gray-900 dark:hover:text-white transition">Profile</Link>
+            <Link href={`/user/${user.id}`} className="transition hover:text-foreground">Profile</Link>
            
             </div>
           )}
           <ThemeToggle />
           <Link
             href="/book/my-books"
-            className="hover:text-gray-900 dark:hover:text-white transition"
+            className="transition hover:text-foreground"
           >
             My Books
           </Link>
@@ -39,13 +39,13 @@ export default async function NavigationHeader() {
           <Form action={Logout}>
             <button
               type="submit"
-              className="hover:text-gray-900 dark:hover:text-white transition"
+              className="transition hover:text-foreground"
             >
               Logout
             </button>
           </Form>
           ) : (
-            <Link href="/login" className="hover:text-gray-900 dark:hover:text-white transition">
+            <Link href="/login" className="transition hover:text-foreground">
               Login
             </Link>
           )}

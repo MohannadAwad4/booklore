@@ -1,5 +1,5 @@
 "use client";
-import ImageWithFallback from "@/components/ImageWithFallback";
+
 import { BookCoverPlaceholder } from "@/components/media-placeholders";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -7,7 +7,7 @@ import type { GenreListItem, StoryType } from "@/lib/types";
 import { DeleteBook } from "@/app/actions/book";
 import { useEffect, useState } from "react";
 import Form from "next/form";
-import PublishBookModal from "./modals/PublishBook.modal";
+import PublishBookModal from "@/components/modals/PublishBook.modal";
 
 export default function MyBookItem({
   story,
@@ -44,15 +44,16 @@ export default function MyBookItem({
         className="group flex gap-4 rounded-xl border p-3 hover:bg-gray-50 transition"
       >
         <div className="relative aspect-[2/3] w-16 shrink-0 overflow-hidden rounded-lg border bg-muted">
-          <ImageWithFallback
-            src={coverSrc}
-            fallback={<BookCoverPlaceholder className="size-10 text-muted-foreground" />}
-            alt={`${story.title} cover`}
-            fill
-            quality={88}
-            className="object-contain object-center"
-            sizes="128px"
-          />
+        {coverSrc ? (
+        <img
+          src={coverSrc}
+          alt={`${story.title} cover`}
+          className="object-contain object-center"
+          sizes="128px"
+        />
+        ) : (
+          <BookCoverPlaceholder className="size-full text-muted-foreground" />
+        )}
         </div>
 
         <div className="min-w-0 flex-1">

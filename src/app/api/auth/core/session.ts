@@ -1,7 +1,16 @@
 import { cookies } from "next/headers";
 import crypto from "crypto";
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+
+/** Safe to pass to the client (no `passwordHash`). */
+const sessionUserSelect = {
+  id: true,
+  
+} satisfies Prisma.UserSelect;
+
+export type SessionUser = Prisma.UserGetPayload<{ select: typeof sessionUserSelect }>;
 const UserSessionSchema = z.object({
     id: z.string(),
     username: z.string(),
@@ -30,7 +39,7 @@ export async function GetUserSession() {
     //find session in database
     const session = await prisma.session.findUnique({
         where:{id:sessionId},
-        include:{user:true}
+        include:{user:{ select: sessionUserSelect }},
     });
     //if session is not found in db, return null
     if (!session) return null;

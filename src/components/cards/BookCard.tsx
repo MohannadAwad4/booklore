@@ -1,12 +1,12 @@
 "use client";
 
 import { StoryStatus, type Story } from "@prisma/client";
-import ImageWithFallback from "@/components/ImageWithFallback";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { EllipsisVertical, Heart } from "lucide-react";
 import { BookCoverPlaceholder } from "@/components/media-placeholders";
 import { BookMarkBook, LikeStory } from "@/app/actions/book";
+
 
 function formatReads(n: number): string {
   if (n >= 1_000_000)
@@ -95,15 +95,16 @@ export default function BookCard({
           className="absolute inset-0 z-0 block"
           aria-label={`Open ${story.title}`}
         >
-          <ImageWithFallback
+          {coverSrc ? (
+          <img
             src={coverSrc}
-            fallback={<BookCoverPlaceholder />}
-            alt=""
-            fill
-            quality={88}
-            className="object-contain object-center transition duration-200 ease-out"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1536px) 22vw, 320px"
+            alt={`${story.title} cover`}
+            className="object-contain object-center"
+            sizes="128px"
           />
+        ) : (
+          <BookCoverPlaceholder className="size-full text-muted-foreground" />
+        )}
         </Link>
 
         {canInteract ? (

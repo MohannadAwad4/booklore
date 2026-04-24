@@ -2,8 +2,8 @@ import { GetUserSession } from "@/app/api/auth/core/session";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import CreateChapter from "@/app/actions/chapter/create-chapter";
-import MyChapterItem from "@/components/MyChapterItem";
-import BookComments from "@/components/comments/BookComments";
+import MyChapterItem from "@/components/items/MyChapterItem";
+import CommentThreads from "@/components/comments/CommentThreads";
 import AddBookComment from "@/app/actions/book/comment/add-book-comment";
 import FollowButton from "@/components/follow/FollowButton";
 import ChapterInfo from "@/components/cards/ChapterInfo";
@@ -34,10 +34,18 @@ export default async function Chapters({
   if (!story) notFound();
 
   const comments = await prisma.comment.findMany({
-    where: { storyId },
+    where: { storyId, chapterId: null, parentId: null },
     include: {
       user: { select: { username: true, displayName: true } },
+      replies: {
+        where: { chapterId: null },
+        orderBy: { createdAt: "asc" },
+        include: {
+          user: { select: { username: true, displayName: true } },
+        },
+      },
     },
+    orderBy: { createdAt: "desc" },
   });
   const userIsAuthor = user && story.authorId === user.id;
 
@@ -118,7 +126,7 @@ export default async function Chapters({
               <textarea name="content" placeholder="Add a comment" />
               <button type="submit">Add Comment</button>
             </form>
-            <BookComments comments={comments} storyId={storyId} />
+            <CommentThreads comments={comments} storyId={storyId} />
           </>
         ) : (
           <h1 className="text-2xl font-bold">No chapters available</h1>

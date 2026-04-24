@@ -36,7 +36,10 @@ export default async function BookFeedPage({
     ];
   }
 
-  if (category?.toLocaleUpperCase() === StoryCategory.FICTION || category?.toLocaleUpperCase() === StoryCategory.NON_FICTION) {
+  if (
+    category?.toLocaleUpperCase() === StoryCategory.FICTION ||
+    category?.toLocaleUpperCase() === StoryCategory.NON_FICTION
+  ) {
     where.storyCategory = category.toLocaleUpperCase() as StoryCategory;
   }
 
@@ -49,7 +52,10 @@ export default async function BookFeedPage({
   }
 
   const genreSlugs =
-    genres?.split(",").map((s) => s.trim()).filter(Boolean) ?? [];
+    genres
+      ?.split(",")
+      .map((s) => s.trim())
+      .filter(Boolean) ?? [];
   if (genreSlugs.length > 0) {
     where.genres = {
       some: { genre: { slug: { in: genreSlugs } } },

@@ -42,40 +42,44 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/*
+ * Dark theme aligned with app “InkWell” tokens (--color-bg, surfaces, borders, type).
+ * Base is warm near-black (#0f0d0b), not flat OLED black or lifted grey.
+ */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --button: #b5703a;
-  --button-foreground: #ffffff;
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background: #0f0d0b;
+  --foreground: #f0ebe4;
+  --button: #c9956a;
+  --button-foreground: #0f0d0b;
+  --card: #1f1b16;
+  --card-foreground: #f0ebe4;
+  --popover: #1f1b16;
+  --popover-foreground: #f0ebe4;
+  --primary: #c9956a;
+  --primary-foreground: #0f0d0b;
+  --secondary: #2a2420;
+  --secondary-foreground: #f0ebe4;
+  --muted: #1a1612;
+  --muted-foreground: #b8a898;
+  --accent: #2a2420;
+  --accent-foreground: #f0ebe4;
+  --destructive: #e07070;
+  --border: #2e2820;
+  --input: #231f1a;
+  --ring: #c9956a;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: #1a1612;
+  --sidebar-foreground: #f0ebe4;
+  --sidebar-primary: #c9956a;
+  --sidebar-primary-foreground: #0f0d0b;
+  --sidebar-accent: #2a2420;
+  --sidebar-accent-foreground: #f0ebe4;
+  --sidebar-border: #2e2820;
+  --sidebar-ring: #c9956a;
 }
 
 @theme inline {

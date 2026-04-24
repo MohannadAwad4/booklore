@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import Editor from "@/components/rich-text-editor";
 import Form from "next/form";
 import { UpdateChapter } from "@/app/actions/chapter";
-import ChapterComments from "@/components/comments/ChapterComments";
+import CommentThreads from "@/components/comments/CommentThreads";
 import ChapterTitle from "@/components/ChapterTitle";
 import PublishedChapterDisplay from "@/components/PublishedChapterDisplay";
 import AddChapterComment from "@/app/actions/book/comment/add-chapter-comments";
@@ -40,10 +40,18 @@ export default async function ChapterEditPage({
   const isPublished = chapter.status === "PUBLISHED";
   const [comments, allChapters] = await Promise.all([
     prisma.comment.findMany({
-      where: { chapterId },
+      where: { chapterId, parentId: null },
       include: {
         user: { select: { username: true, displayName: true } },
+        replies: {
+          where: { chapterId },
+          orderBy: { createdAt: "asc" },
+          include: {
+            user: { select: { username: true, displayName: true } },
+          },
+        },
       },
+      orderBy: { createdAt: "desc" },
     }),
     isPublished
       ? prisma.chapter.findMany({
@@ -65,10 +73,14 @@ export default async function ChapterEditPage({
         <form action={AddChapterComment}>
           <input type="hidden" name="chapterId" value={chapterId} />
           <input type="hidden" name="storyId" value={storyId} />
-          <textarea name="content" placeholder="Add a comment" />
+          <textarea required name="content" placeholder="Add a comment" />
           <button type="submit">Add Comment</button>
         </form>
-        <ChapterComments comments={comments} chapterId={chapterId} />
+        <CommentThreads
+          comments={comments}
+          storyId={storyId}
+          chapterId={chapterId}
+        />
       </div>
     );
   }

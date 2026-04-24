@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { GetUserSession } from "@/app/api/auth/core/session";
 import Link from "next/link";
-import MyBookItem from "@/components/MyBookItem";
+import MyBookItem from "@/components/items/MyBookItem";
 import ImportBook from "@/components/book-import/ImportBook";
 import CreateBook from "@/components/book-import/CreateBook";
 
@@ -37,7 +37,7 @@ export default async function MyBooksPage() {
         </p>
         <ImportBook />
       </section>
-      <CreateBook  />
+      <CreateBook />
       {/* <Link href="/book/create-book">Create Book</Link> */}
       {(!stories || stories.length === 0) && <div>No books found</div>}
       {stories.map((story) => (

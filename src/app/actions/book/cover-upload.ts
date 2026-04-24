@@ -1,5 +1,3 @@
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 const PUBLISH_COVER_TYPES = [
@@ -76,7 +74,7 @@ async function saveCoverToR2(
   return `${base}/${key}`;
 }
 
-/** Saves cover to R2 when R2_* env is set; otherwise `public/uploads/covers/{storyId}.ext`. */
+/** Saves cover to R2. Requires `R2_*` env vars. */
 export async function saveCoverFromUpload(
   storyId: string,
   coverFile: File | null
@@ -92,14 +90,10 @@ export async function saveCoverFromUpload(
   const contentType = publishCoverContentType(coverFile.type);
   const buffer = Buffer.from(await coverFile.arrayBuffer());
 
-  if (getR2Env()) {
-    return saveCoverToR2(storyId, ext, buffer, contentType);
+  if (!getR2Env()) {
+    throw new Error(
+      "Cover upload requires R2: set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL."
+    );
   }
-
-  const dir = path.join(process.cwd(), "public", "uploads", "covers");
-  await mkdir(dir, { recursive: true });
-  const filename = `${storyId}.${ext}`;
-  const filepath = path.join(dir, filename);
-  await writeFile(filepath, buffer);
-  return `/uploads/covers/${filename}`;
+  return saveCoverToR2(storyId, ext, buffer, contentType);
 }

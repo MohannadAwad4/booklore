@@ -2,7 +2,6 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import ImageWithFallback from "@/components/ImageWithFallback";
 import { BookCoverPlaceholder } from "@/components/media-placeholders";
 import { toast } from "sonner";
 import CoverImageUpload from "@/components/CoverImageUpload";
@@ -170,15 +169,16 @@ export default function ChapterInfo({
       ) : (
         <>
           <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-muted ring-1 ring-border">
-            <ImageWithFallback
+            {coverSrc ? (
+              <img
               src={coverSrc}
-              fallback={<BookCoverPlaceholder className="size-16 text-muted-foreground" />}
-              alt=""
-              fill
-              quality={88}
+              alt={story.title}
               className="object-contain object-center"
-              sizes="(max-width: 1024px) 92vw, 360px"
+              sizes="128px"
             />
+            ) : (
+              <BookCoverPlaceholder className="size-16 text-muted-foreground" />
+            )}
           </div>
 
           <div>
