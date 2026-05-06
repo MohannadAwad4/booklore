@@ -73,7 +73,10 @@ model User {
   id           String   @id @default(uuid())
   email        String   @unique
   username     String   @unique
-  passwordHash String
+  /// Null for Google-only users.
+  passwordHash String?
+  /// Google account `sub` (OpenID Connect).
+  googleId     String?  @unique
   displayName  String?
   bio          String?
   avatarUrl    String?

@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 
 type TabRootProps = {
   tabData: Story[];
-  viewerUserId: string | null;
   bookmarkedStoryIds: string[];
   likedStoryIds: string[];
 };
@@ -21,7 +20,6 @@ const tabs = [
 
 export default function TabRoot({
   tabData,
-  viewerUserId,
   bookmarkedStoryIds,
   likedStoryIds,
 }: TabRootProps) {
@@ -85,7 +83,6 @@ export default function TabRoot({
             <BookCard
               key={story.id}
               story={story}
-              viewerUserId={viewerUserId}
               initialBookmarked={bookmarkedStoryIds.includes(story.id)}
               initialLiked={likedStoryIds.includes(story.id)}
             />

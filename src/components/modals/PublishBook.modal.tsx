@@ -8,6 +8,7 @@ import Select, { type MultiValue } from "react-select";
 import { useState } from "react";
 import CoverImageUpload from "../CoverImageUpload";
 import AddTags from "../AddTags";
+import { toast } from "sonner";
 type GenreOption = { value: string; label: string };
 
 type CategoryOption = { value: StoryCategory; label: string };
@@ -39,9 +40,16 @@ export default function PublishBookModal({
       const formData = new FormData(e.currentTarget);
       await PublishBook(formData);
       router.refresh();
+      toast.success("Book published",{
+        position: "top-center",
+      });
       onClose();
-    } catch {
+    } catch (error) {
       setSubmitting(false);
+      toast.error(error instanceof Error ? error.message : "Something went wrong",{
+        position: "top-center",
+      });
+      onClose();
     }
   }
   return (

@@ -20,6 +20,13 @@ function r2PublicHostPattern() {
 const r2Pattern = r2PublicHostPattern();
 
 const nextConfig: NextConfig = {
+  /** Prisma + pg must run as Node externals; bundling them breaks OAuth API routes under Turbopack. */
+  serverExternalPackages: [
+    "@prisma/client",
+    "prisma",
+    "@prisma/adapter-pg",
+    "pg",
+  ],
   experimental: {
     serverActions: {
       bodySizeLimit: "5mb",

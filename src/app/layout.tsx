@@ -3,15 +3,16 @@ import { GetUserSession } from "@/app/api/auth/core/session";
 import NavigationHeader from "@/components/nav_header";
 import NavigationHeaderGate from "@/components/NavigationHeaderGate";
 import { SessionUserProvider } from "@/components/providers/SessionUserProvider";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -34,7 +35,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${geistMono.variable} antialiased`}
       >
         <SessionUserProvider user={user}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

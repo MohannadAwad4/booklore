@@ -3,16 +3,13 @@
 import type { CommentThread } from "@/lib/comment-thread";
 import CommentItem from "@/components/items/CommentItem";
 import { useEffect, useState } from "react";
+import { ChevronDown, ChevronUp, MessagesSquare } from "lucide-react";
 
 /** Book-level (`chapterId` omitted) or chapter-level threaded comments. */
 export default function CommentThreads({
   comments,
-  storyId,
-  chapterId,
 }: {
   comments: CommentThread[];
-  storyId: string;
-  chapterId?: string;
 }) {
   const [openReplies, setOpenReplies] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(comments.map((t) => [t.id, false]))
@@ -37,8 +34,6 @@ export default function CommentThreads({
           <li key={thread.id} className="space-y-2">
             <CommentItem
               comment={thread}
-              storyId={storyId}
-              chapterId={chapterId}
               framed
             />
             {n > 0 ? (
@@ -51,11 +46,18 @@ export default function CommentThreads({
                       [thread.id]: !(p[thread.id] ?? false),
                     }))
                   }
-                  className="text-sm font-medium text-primary hover:underline"
+                  aria-expanded={expanded}
+                  className="group inline-flex h-8 items-center gap-2 rounded-md px-2.5 text-xs font-medium text-foreground transition hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  {expanded
-                    ? "Hide"
-                    : `View ${n} ${n === 1 ? "reply" : "replies"}`}
+                  <MessagesSquare className="size-3.5 text-muted-foreground transition group-hover:text-foreground" />
+                  <span className="text-muted-foreground transition group-hover:text-foreground">
+                    {n} {n === 1 ? "reply" : "replies"}
+                  </span>
+                  {expanded ? (
+                    <ChevronUp className="ml-0.5 size-3.5 text-muted-foreground transition group-hover:text-foreground" />
+                  ) : (
+                    <ChevronDown className="ml-0.5 size-3.5 text-muted-foreground transition group-hover:text-foreground" />
+                  )}
                 </button>
                 {expanded ? (
                   <ul className="mt-2 ml-3 space-y-3 border-l border-border pl-3 sm:ml-6 sm:pl-4">
@@ -63,8 +65,6 @@ export default function CommentThreads({
                       <li key={reply.id}>
                         <CommentItem
                           comment={reply}
-                          storyId={storyId}
-                          chapterId={chapterId}
                           framed={false}
                         />
                       </li>

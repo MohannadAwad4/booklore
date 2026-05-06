@@ -1,7 +1,6 @@
 "use server";
 import { GetUserSession } from "@/app/api/auth/core/session";
 import { prisma } from "@/lib/prisma";
-import { StoryStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 export default async function CreateChapter(formData: FormData) {
@@ -15,13 +14,10 @@ export default async function CreateChapter(formData: FormData) {
   // Ensure ownership
   const story = await prisma.story.findUnique({
     where: { id: storyId },
-    select: { authorId: true,status: true },
+    select: { authorId: true },
   });
   if (!story || story.authorId !== user.id) {
     throw new Error("Forbidden");
-  }
-  if (story.status !== StoryStatus.PUBLISHED) {
-    throw new Error("Story is not published");
   }
   // Source of truth: Chapter table
   const last = await prisma.chapter.findFirst({

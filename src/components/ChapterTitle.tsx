@@ -32,7 +32,6 @@ export default function ChapterTitle({
   const [baseline, setBaseline] = useState(title);
   const formRef = useRef<HTMLFormElement | null>(null);
 
-
   function submitIfChanged() {
     const next = value.trim();
     if (next === baseline.trim()) return;
@@ -50,7 +49,11 @@ export default function ChapterTitle({
   }
 
   return (
-    <form ref={formRef} action={action} className="flex flex-1 min-w-0 items-center gap-2">
+    <form
+      ref={formRef}
+      action={action}
+      className="flex flex-1 min-w-0 items-center gap-2"
+    >
       <input type="hidden" name="chapterId" value={chapterId} />
       <input
         name="title"
@@ -64,7 +67,9 @@ export default function ChapterTitle({
       />
       <SaveIndicator />
       {state && !state.ok && state.error ? (
-        <span className="text-xs text-red-600 dark:text-red-400">{state.error}</span>
+        <span className="text-xs text-red-600 dark:text-red-400">
+          {state.error}
+        </span>
       ) : null}
     </form>
   );

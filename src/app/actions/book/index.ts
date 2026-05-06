@@ -3,7 +3,8 @@
 import RequireUser from "@/app/api/auth/core/require-user";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { StoryCategory, StoryStatus } from "@prisma/client";
+import { chapterStatus, StoryCategory, StoryStatus } from "@prisma/client";
+import { chapterHasNonEmptyContent } from "@/lib/chapter-content";
 import { saveCoverFromUpload } from "./cover-upload";
 
 function normalizeTagName(tag: string): string {
@@ -49,6 +50,32 @@ export async function PublishBook(formData: FormData) {
 
   if (!story) {
     throw new Error("Book not found or unauthorized");
+  }
+
+  let chapterIdToAutoPublish: string | null = null;
+  if (status === StoryStatus.PUBLISHED) {
+    const chapters = await prisma.chapter.findMany({
+      where: { storyId },
+      orderBy: { chapterNumber: "asc" },
+      select: { id: true, status: true, content: true },
+    });
+    if (chapters.length === 0) {
+      throw new Error("Add at least one chapter before publishing.");
+    }
+    const hasPublishedNonEmpty = chapters.some(
+      (c) =>
+        c.status === chapterStatus.PUBLISHED &&
+        chapterHasNonEmptyContent(c.content)
+    );
+    if (!hasPublishedNonEmpty) {
+      const first = chapters[0];
+      if (!chapterHasNonEmptyContent(first.content)) {
+        throw new Error(
+          "Chapter 1 needs body text before you can publish, or publish a chapter that already has content."
+        );
+      }
+      chapterIdToAutoPublish = first.id;
+    }
   }
 
   const coverFile = formData.get("cover") as File | null;
@@ -121,9 +148,23 @@ export async function PublishBook(formData: FormData) {
         skipDuplicates: true,
       });
     }
+
+    if (chapterIdToAutoPublish) {
+      await tx.chapter.update({
+        where: { id: chapterIdToAutoPublish },
+        data: {
+          status: chapterStatus.PUBLISHED,
+          publishedAt: new Date(),
+        },
+      });
+    }
   });
 
   revalidatePath("/book/my-books");
+  revalidatePath(`/book/${storyId}/chapters`);
+  if (chapterIdToAutoPublish) {
+    revalidatePath(`/book/${storyId}/chapters/${chapterIdToAutoPublish}`);
+  }
 }
 
 export async function DeleteBook(formData: FormData) {

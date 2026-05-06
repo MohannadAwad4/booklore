@@ -6,7 +6,7 @@ import TabRoot from "@/components/profile/(tabs)/TabRoot";
 import { AvatarPlaceholder } from "@/components/media-placeholders";
 import Link from "next/link";
 import { GetUserSession } from "@/app/api/auth/core/session";
-import FollowButton from "@/components/follow/FollowButton";
+import FollowButton from "@/components/buttons/FollowButton";
 import { isFollowing } from "@/lib/isFollowing";
 import Section from "@/components/profile/Section";
 
@@ -136,13 +136,10 @@ export default async function ProfilePage({
       />
 
       <Suspense
-        fallback={
-          <div className="text-sm text-muted-foreground">Loading…</div>
-        }
+        fallback={<div className="text-sm text-muted-foreground">Loading…</div>}
       >
         <TabRoot
           tabData={tabData}
-          viewerUserId={currentUser?.id ?? null}
           bookmarkedStoryIds={bookmarkedStoryIds}
           likedStoryIds={likedStoryIds}
         />

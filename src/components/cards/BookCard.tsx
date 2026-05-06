@@ -6,7 +6,8 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { EllipsisVertical, Heart } from "lucide-react";
 import { BookCoverPlaceholder } from "@/components/media-placeholders";
 import { BookMarkBook, LikeStory } from "@/app/actions/book";
-
+import { useUser } from "../providers/SessionUserProvider";
+import { toastNotLoggedIn } from "../modals/ToastIndex";
 
 function formatReads(n: number): string {
   if (n >= 1_000_000)
@@ -17,27 +18,23 @@ function formatReads(n: number): string {
 
 export type BookCardProps = {
   story: Story;
-  /** Logged-in viewer; controls hidden when null. */
-  viewerUserId?: string | null;
   initialBookmarked?: boolean;
   initialLiked?: boolean;
 };
 
 export default function BookCard({
   story,
-  viewerUserId = null,
   initialBookmarked = false,
   initialLiked = false,
 }: BookCardProps) {
   const coverSrc = story.coverUrl?.trim() || null;
-  const canInteract = !!viewerUserId && story.status === StoryStatus.PUBLISHED;
-
+  const user = useUser();
+  const showCoverActions = story.status === StoryStatus.PUBLISHED;
   const [menuOpen, setMenuOpen] = useState(false);
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [liked, setLiked] = useState(initialLiked);
   const [pending, startTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
-
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   useEffect(() => {
@@ -59,6 +56,11 @@ export default function BookCard({
   }, [menuOpen, closeMenu]);
 
   const runBookmark = () => {
+    if (!user) {
+      toastNotLoggedIn();
+      closeMenu();
+      return;
+    }
     startTransition(async () => {
       try {
         const fd = new FormData();
@@ -73,6 +75,10 @@ export default function BookCard({
   };
 
   const runLike = (e: React.MouseEvent) => {
+    if (!user) {
+      toastNotLoggedIn();
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     startTransition(async () => {
@@ -88,7 +94,7 @@ export default function BookCard({
   };
 
   return (
-    <div className="h-full rounded-lg p-0.5 outline-none transition hover:opacity-[0.98] focus-within:ring-2 focus-within:ring-orange-500/80 focus-within:ring-offset-1 focus-within:ring-offset-background">
+    <div className="h-full rounded-lg p-0.5 font-sans outline-none transition hover:opacity-[0.98]">
       <div className="group/cover relative aspect-[2/3] w-full shrink-0 overflow-hidden rounded-xl bg-gradient-to-b from-neutral-200 to-neutral-300 shadow-sm ring-1 ring-black/10 dark:from-neutral-800 dark:to-neutral-900 dark:ring-white/10">
         <Link
           href={`/book/${story.id}/chapters`}
@@ -96,18 +102,18 @@ export default function BookCard({
           aria-label={`Open ${story.title}`}
         >
           {coverSrc ? (
-          <img
-            src={coverSrc}
-            alt={`${story.title} cover`}
-            className="object-contain object-center"
-            sizes="128px"
-          />
-        ) : (
-          <BookCoverPlaceholder className="size-full text-muted-foreground" />
-        )}
+            <img
+              src={coverSrc}
+              alt={`${story.title} cover`}
+              className="object-contain object-center"
+              sizes="128px"
+            />
+          ) : (
+            <BookCoverPlaceholder className="size-full text-muted-foreground" />
+          )}
         </Link>
 
-        {canInteract ? (
+        {showCoverActions ? (
           <>
             <div
               ref={menuRef}
@@ -175,13 +181,13 @@ export default function BookCard({
 
       <Link
         href={`/book/${story.id}/chapters`}
-        className="mt-0 block rounded-sm pt-1.5 outline-none focus-visible:ring-2 focus-visible:ring-orange-500/80"
+        className="mt-0 block rounded-sm pt-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
-        <h3 className="line-clamp-2 text-[11px] font-bold leading-tight tracking-tight text-foreground hover:underline sm:text-xs">
+        <h3 className="ui-trending-title line-clamp-2 leading-snug hover:underline">
           {story.title}
         </h3>
         {story.viewsCount > 0 ? (
-          <p className="mt-0.5 text-[10px] font-medium text-orange-600 dark:text-orange-400 sm:text-xs">
+          <p className="mt-0.5 text-[10px] font-medium text-ui-primary sm:text-xs">
             {formatReads(story.viewsCount)} reads
           </p>
         ) : null}

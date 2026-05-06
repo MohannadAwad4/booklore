@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import RequireUser from "@/app/api/auth/core/require-user";
 import { prisma } from "@/lib/prisma";
-import { chapterStatus } from "@prisma/client";
+import { chapterStatus, StoryStatus } from "@prisma/client";
+import { chapterHasNonEmptyContent } from "@/lib/chapter-content";
 
 export type UpdateChapterState =
   | { ok: true; title: string }
@@ -65,15 +66,79 @@ export default async function SetChapterStatus(fordata: FormData) {
   if (!chapterId || !status) {
     throw new Error("Missing fields");
   }
-  const chapter = await prisma.chapter.updateMany({
-    where: {
-      id: chapterId,
-      authorId: user.id,
-    },
-    data: {
-      status,
-      publishedAt: status === "PUBLISHED" ? new Date() : null,
+
+  const existing = await prisma.chapter.findFirst({
+    where: { id: chapterId, authorId: user.id },
+    select: {
+      id: true,
+      status: true,
+      content: true,
+      storyId: true,
+      story: { select: { status: true, authorId: true } },
     },
   });
-  return chapter;
+
+  if (!existing) {
+    throw new Error("Chapter not found or unauthorized");
+  }
+  if (existing.story.authorId !== user.id) {
+    throw new Error("Unauthorized");
+  }
+
+  if (existing.status === chapterStatus.PUBLISHED && status !== chapterStatus.PUBLISHED) {
+    throw new Error("Published chapters can’t be changed.");
+  }
+
+  if (status === chapterStatus.PUBLISHED) {
+    if (!chapterHasNonEmptyContent(existing.content)) {
+      throw new Error("Add chapter content before publishing.");
+    }
+  }
+
+  const publishChapter =
+    status === chapterStatus.PUBLISHED
+      ? {
+          status: chapterStatus.PUBLISHED,
+          publishedAt: new Date(),
+        }
+      : {
+          status,
+          publishedAt: null as Date | null,
+        };
+
+  if (status === chapterStatus.PUBLISHED) {
+    const storyWasDraft = existing.story.status !== StoryStatus.PUBLISHED;
+    await prisma.$transaction(async (tx) => {
+      if (storyWasDraft) {
+        const storyUp = await tx.story.updateMany({
+          where: { id: existing.storyId, authorId: user.id },
+          data: {
+            status: StoryStatus.PUBLISHED,
+            publishedAt: new Date(),
+          },
+        });
+        if (storyUp.count !== 1) {
+          throw new Error("Book not found or unauthorized");
+        }
+      }
+      const chUp = await tx.chapter.updateMany({
+        where: { id: chapterId, authorId: user.id },
+        data: publishChapter,
+      });
+      if (chUp.count !== 1) {
+        throw new Error("Chapter not found or unauthorized");
+      }
+    });
+  } else {
+    await prisma.chapter.updateMany({
+      where: { id: chapterId, authorId: user.id },
+      data: publishChapter,
+    });
+  }
+
+  revalidatePath("/book/my-books");
+  revalidatePath(`/book/${existing.storyId}/chapters`);
+  revalidatePath(`/book/${existing.storyId}/chapters/${chapterId}`);
+
+  return { count: 1 };
 }

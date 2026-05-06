@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { followUser, unfollowUser } from "@/app/actions/follow";
 import { cn } from "@/lib/utils";
+import { useUser } from "../providers/SessionUserProvider";
+import { toastNotLoggedIn } from "../modals/ToastIndex";
 
 export default function FollowButton({
   targetUserId,
@@ -13,7 +15,12 @@ export default function FollowButton({
   className?: string;
 }) {
   const [isFollowing, setIsFollowing] = useState<boolean>(isFollowingInitial);
+  const user = useUser();
   const handleFollowClick = () => {
+    if(!user){
+      toastNotLoggedIn();
+      return;
+    }
     if (isFollowing) {
       unfollowUser(targetUserId);
     } else {

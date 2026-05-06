@@ -40,6 +40,12 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /* react-select: selected row in menu — lighter than solid --button */
+  --select-option-selected-bg: color-mix(in srgb, var(--button) 34%, white);
+  --select-option-selected-fg: var(--popover-foreground);
+  /* Primary editorial UI (light): geometric sans + muted blue-grey type + cool surface */
+  --ui-primary-foreground: #64748b;
+  --ui-primary-surface: #f0f4f8;
 }
 
 /*
@@ -80,6 +86,10 @@
   --sidebar-accent-foreground: #f0ebe4;
   --sidebar-border: #2e2820;
   --sidebar-ring: #c9956a;
+  --select-option-selected-bg: color-mix(in srgb, var(--button) 40%, white);
+  --select-option-selected-fg: var(--button-foreground);
+  --ui-primary-foreground: #ffffff;
+  --ui-primary-surface: #1e293b;
 }
 
 @theme inline {
@@ -87,9 +97,11 @@
   --color-foreground: var(--foreground);
   --color-button: var(--button);
   --color-button-foreground: var(--button-foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
+  --color-ui-primary: var(--ui-primary-foreground);
+  --color-ui-surface: var(--ui-primary-surface);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -137,5 +149,20 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  /* Same family + color as reference “trending” row (headings + captions) */
+  .font-ui-primary {
+    @apply font-sans text-ui-primary;
+  }
+
+  .ui-trending-heading {
+    @apply font-sans text-ui-primary font-semibold uppercase tracking-[0.12em] text-xs;
+  }
+
+  .ui-trending-title {
+    @apply font-sans text-ui-primary text-sm font-medium;
   }
 }

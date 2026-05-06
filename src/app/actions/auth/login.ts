@@ -1,4 +1,4 @@
-'use server';
+"use server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { CreateUserSession } from "@/app/api/auth/core/session";
@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 
 function verifyPassword(
   password: string,
-  storedHash: string,
+  storedHash: string
 ): Promise<boolean> {
   return new Promise((resolve, reject) => {
     const [salt, hash] = storedHash.split(":");
@@ -32,6 +32,9 @@ export default async function Login(formData: FormData) {
   });
   if (!user) {
     throw new Error("Invalid credentials");
+  }
+  if (!user.passwordHash) {
+    throw new Error("This account uses Google sign-in.");
   }
   const isValid = await verifyPassword(password, user.passwordHash);
   if (!isValid) {
