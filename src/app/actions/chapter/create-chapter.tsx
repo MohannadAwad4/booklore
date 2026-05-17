@@ -1,6 +1,7 @@
 "use server";
 import { GetUserSession } from "@/app/api/auth/core/session";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export default async function CreateChapter(formData: FormData) {
@@ -49,5 +50,8 @@ export default async function CreateChapter(formData: FormData) {
     return c;
   });
 
-  redirect(`/book/${storyId}/chapters/${chapter.id}`);
+  revalidatePath("/book/my-books");
+  revalidatePath(`/book/${storyId}/chapters`);
+
+  redirect(`/book/${storyId}/chapters/${chapter.id}/write`);
 }

@@ -9,6 +9,7 @@ import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next"
 
 
 const inter = Inter({
@@ -47,6 +48,7 @@ export default async function RootLayout({
               </NavigationHeaderGate>
               {children}
               <Toaster />
+              <Analytics />
             </AuthModalProvider>
           </ThemeProvider>
         </SessionUserProvider>

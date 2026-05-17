@@ -2,6 +2,8 @@ import { GetUserSession } from "@/app/api/auth/core/session";
 import { prisma } from "@/lib/prisma";
 import PublishedChapterDisplay from "@/components/PublishedChapterDisplay";
 import ChapterReadToolbar from "@/components/book/ChapterReadToolbar";
+import { redirect } from "next/navigation";
+import { chapterStatus } from "@/lib/enums";
 export default async function ChapterEditPage({
   params,
 }: {
@@ -24,6 +26,7 @@ export default async function ChapterEditPage({
       status: true,
       chapterNumber: true,
       likesCount: true,
+      authorId: true,
     },
   });
   if (!chapter) {
@@ -31,7 +34,13 @@ export default async function ChapterEditPage({
       <div>Chapter not found or you do not have permission to edit it.</div>
     );
   }
-  const isPublished = chapter.status === "PUBLISHED";
+
+  const isAuthor = Boolean(user && chapter.authorId === user.id);
+  if (isAuthor && chapter.status !== chapterStatus.PUBLISHED) {
+    redirect(`/book/${storyId}/chapters/${chapterId}/write`);
+  }
+
+  const isPublished = chapter.status === chapterStatus.PUBLISHED;
   const [comments, chapters, chapterLikeRow] = await Promise.all([
     prisma.comment.findMany({
       where: { chapterId, parentId: null },
