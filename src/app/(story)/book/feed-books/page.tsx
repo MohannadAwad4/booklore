@@ -68,6 +68,7 @@ export default async function BookFeedPage({
     prisma.story.findMany({
       where,
       orderBy: { createdAt: "desc" },
+     
     }),
     prisma.genre.findMany({
       select: { id: true, name: true, slug: true },

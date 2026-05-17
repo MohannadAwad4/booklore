@@ -85,7 +85,10 @@ export default async function SetChapterStatus(fordata: FormData) {
     throw new Error("Unauthorized");
   }
 
-  if (existing.status === chapterStatus.PUBLISHED && status !== chapterStatus.PUBLISHED) {
+  if (
+    existing.status === chapterStatus.PUBLISHED &&
+    status !== chapterStatus.PUBLISHED
+  ) {
     throw new Error("Published chapters can’t be changed.");
   }
 
@@ -157,7 +160,9 @@ export async function DeleteChapter(formData: FormData) {
   });
 
   if (!existing) {
-    throw new Error("Chapter not found or you do not have permission to delete it");
+    throw new Error(
+      "Chapter not found or you do not have permission to delete it"
+    );
   }
 
   await prisma.chapter.deleteMany({
