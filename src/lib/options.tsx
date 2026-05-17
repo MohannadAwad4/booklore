@@ -1,4 +1,4 @@
-import { StoryCategory, StoryProgress } from "@prisma/client";
+import { StoryCategory, StoryProgress } from "@/lib/enums";
 
 export const categoryOptions = [
   { value: StoryCategory.FICTION, label: "Fiction" },

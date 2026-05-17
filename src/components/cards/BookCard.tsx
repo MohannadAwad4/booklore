@@ -1,6 +1,7 @@
 "use client";
 
-import { StoryStatus, type Story } from "@prisma/client";
+import type { Story } from "@prisma/client";
+import { StoryStatus } from "@/lib/enums";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { EllipsisVertical, Heart } from "lucide-react";

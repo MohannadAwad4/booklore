@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import SearchModal from "./modals/SearchModal";
-import { Story } from "@prisma/client";
+import type { Story } from "@prisma/client";
 
 export default function Searchbar({ stories }: { stories: Story[] }) {
   

@@ -1,7 +1,6 @@
 "use client";
 
 import useDebounce from "@/hooks/useDebounce";
-import { Story } from "@prisma/client";
 import { useState } from "react";
 import SearchCard from "../cards/SearchCard";
 import { StoryType } from "@/lib/types";

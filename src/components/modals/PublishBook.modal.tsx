@@ -2,7 +2,11 @@
 
 import { PublishBook } from "@/app/actions/book";
 import type { GenreListItem, StoryType } from "@/lib/types";
-import { StoryCategory, StoryStatus } from "@prisma/client";
+import {
+  StoryCategory,
+  StoryStatus,
+  type StoryCategoryValue,
+} from "@/lib/enums";
 import { useRouter } from "next/navigation";
 import Select, { type MultiValue } from "react-select";
 import { useRef, useState } from "react";
@@ -23,7 +27,7 @@ import { cn } from "@/lib/utils";
 
 type GenreOption = { value: string; label: string };
 
-type CategoryOption = { value: StoryCategory; label: string };
+type CategoryOption = { value: StoryCategoryValue; label: string };
 
 const CATEGORY_OPTIONS: CategoryOption[] = [
   { value: StoryCategory.FICTION, label: "Fiction" },
@@ -46,7 +50,7 @@ type PublishBookModalProps = {
 export default function PublishBookModal({ story, genres }: PublishBookModalProps) {
   const router = useRouter();
   const dismissRef = useRef<HTMLButtonElement>(null);
-  const [category, setCategory] = useState<StoryCategory>(
+  const [category, setCategory] = useState<StoryCategoryValue>(
     () => story.storyCategory ?? StoryCategory.FICTION
   );
   const [genreSelection, setGenreSelection] = useState<MultiValue<GenreOption>>(
@@ -187,7 +191,7 @@ export default function PublishBookModal({ story, genres }: PublishBookModalProp
                 value={categoryValue}
                 onChange={(opt) =>
                   setCategory(
-                    (opt?.value as StoryCategory) ?? StoryCategory.FICTION
+                    (opt?.value as StoryCategoryValue) ?? StoryCategory.FICTION
                   )
                 }
               />

@@ -3,7 +3,7 @@ import { Children, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Filter, Search } from "lucide-react";
-import { StoryCategory, StoryProgress } from "@prisma/client";
+import type { StoryCategoryValue, StoryProgressValue } from "@/lib/enums";
 import type { GenreListItem } from "@/lib/types";
 import { categoryOptions, progressOptions } from "@/lib/options";
 import Select, {
@@ -165,8 +165,8 @@ const genreSelectStyles = createThemedFilterSelectStyles<GenreOption, true>();
 
 export default function FilterSection({ genres }: { genres: GenreListItem[] }) {
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<StoryCategory | null>(null);
-  const [progress, setProgress] = useState<StoryProgress | null>(null);
+  const [category, setCategory] = useState<StoryCategoryValue | null>(null);
+  const [progress, setProgress] = useState<StoryProgressValue | null>(null);
   const [genreSelection, setGenreSelection] = useState<MultiValue<GenreOption>>(
     []
   );
@@ -230,7 +230,7 @@ export default function FilterSection({ genres }: { genres: GenreListItem[] }) {
               : null
           }
           onChange={(opt) =>
-            setCategory(opt ? (opt.value as StoryCategory) : null)
+            setCategory(opt ? (opt.value as StoryCategoryValue) : null)
           }
         />
       </div>
@@ -248,7 +248,7 @@ export default function FilterSection({ genres }: { genres: GenreListItem[] }) {
               : null
           }
           onChange={(opt) =>
-            setProgress(opt ? (opt.value as StoryProgress) : null)
+            setProgress(opt ? (opt.value as StoryProgressValue) : null)
           }
         />
       </div>

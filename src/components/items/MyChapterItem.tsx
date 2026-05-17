@@ -4,7 +4,7 @@ import SetChapterStatus, { DeleteChapter } from "@/app/actions/chapter";
 import { ChapterType } from "@/lib/types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { chapterStatus } from "@prisma/client";
+import { chapterStatus } from "@/lib/enums";
 import { Trash2 } from "lucide-react";
 import { AreYouSure } from "@/components/modals/ToastIndex";
 import { toast } from "sonner";
