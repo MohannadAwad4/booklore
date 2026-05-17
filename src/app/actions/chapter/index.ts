@@ -142,3 +142,28 @@ export default async function SetChapterStatus(fordata: FormData) {
 
   return { count: 1 };
 }
+
+export async function DeleteChapter(formData: FormData) {
+  const user = await RequireUser();
+  const chapterId = String(formData.get("chapterId") || "").trim();
+
+  if (!chapterId) {
+    throw new Error("Missing chapterId");
+  }
+
+  const existing = await prisma.chapter.findFirst({
+    where: { id: chapterId, authorId: user.id },
+    select: { storyId: true },
+  });
+
+  if (!existing) {
+    throw new Error("Chapter not found or you do not have permission to delete it");
+  }
+
+  await prisma.chapter.deleteMany({
+    where: { id: chapterId, authorId: user.id },
+  });
+
+  revalidatePath("/book/my-books");
+  revalidatePath(`/book/${existing.storyId}/chapters`);
+}

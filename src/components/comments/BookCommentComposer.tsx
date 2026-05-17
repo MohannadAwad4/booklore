@@ -3,6 +3,8 @@
 import AddBookComment from "@/app/actions/book/comment/add-book-comment";
 import { openAuthModal } from "@/lib/auth-modal-bridge";
 import { Send } from "lucide-react";
+import { useUser } from "../providers/SessionUserProvider";
+import { useChaptersRoute } from "@/app/(story)/book/[storyId]/chapters/chapters-route-context";
 
 const shellClass =
   "border-border/80 bg-background text-foreground flex w-full items-center gap-2 rounded-full border py-1.5 pl-4 pr-1.5 shadow-sm dark:border-border dark:bg-card sm:pl-5";
@@ -10,14 +12,10 @@ const shellClass =
 const sendBtnClass =
   "flex size-9 shrink-0 items-center justify-center rounded-full bg-button text-button-foreground shadow-sm transition hover:bg-button/90";
 
-export default function BookCommentComposer({
-  storyId,
-  canComment,
-}: {
-  storyId: string;
-  canComment: boolean;
-}) {
-  if (!canComment) {
+export default function BookCommentComposer() {
+  const user = useUser();
+  const { storyId } = useChaptersRoute();
+  if (!user) {
     return (
       <div className={shellClass}>
         <label htmlFor="book-comment-guest" className="sr-only">

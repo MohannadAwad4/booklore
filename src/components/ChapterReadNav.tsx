@@ -28,7 +28,7 @@ export default function ChapterReadNav({
 
   return (
     <div
-      className="flex min-w-0 flex-1 items-center justify-center gap-1.5 px-1 sm:gap-2"
+      className="flex min-w-0 items-center justify-center gap-1.5 px-1 sm:gap-2"
       role="navigation"
       aria-label="Chapter navigation"
     >

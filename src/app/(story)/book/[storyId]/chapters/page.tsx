@@ -184,10 +184,7 @@ export default async function Chapters({
               </section>
 
               <section className="space-y-4 border-t border-border pt-8">
-                <BookCommentComposer
-                  storyId={storyId}
-                  canComment={Boolean(user)}
-                />
+                <BookCommentComposer />
                 <CommentThreads comments={comments} />
               </section>
             </>

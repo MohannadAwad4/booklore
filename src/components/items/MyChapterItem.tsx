@@ -1,16 +1,16 @@
 "use client";
 
-import SetChapterStatus from "@/app/actions/chapter";
+import SetChapterStatus, { DeleteChapter } from "@/app/actions/chapter";
 import { ChapterType } from "@/lib/types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { chapterStatus, StoryStatus } from "@prisma/client";
+import { chapterStatus } from "@prisma/client";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
 export default function MyChapterItem({
   chapter,
-  storyId,
   userIsAuthor,
 }: {
   chapter: ChapterType;
@@ -18,33 +18,62 @@ export default function MyChapterItem({
   userIsAuthor: boolean | null;
 }) {
   const router = useRouter();
-  const [status, setStatus] = useState(chapter.status);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const isPublished = chapter.status === chapterStatus.PUBLISHED;
 
-  async function handleStatusSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const href =
+    userIsAuthor && !isPublished
+      ? `/book/${chapter.storyId}/chapters/${chapter.id}/write`
+      : `/book/${chapter.storyId}/chapters/${chapter.id}`;
+
+  async function handlePublish() {
+    setIsPublishing(true);
     try {
-      e.preventDefault();
-      const form = e.currentTarget;
-      const formData = new FormData(form);
+      const formData = new FormData();
+      formData.set("chapterId", chapter.id);
+      formData.set("status", chapterStatus.PUBLISHED);
       await SetChapterStatus(formData);
-      toast.success("Chapter status updated", {
-        position: "top-center",
-      });
+      toast.success("Chapter published", { position: "top-center" });
       router.refresh();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Something went wrong",
-        {
-          position: "top-center",
-        }
+        { position: "top-center" },
       );
-      setStatus(chapter.status);
+    } finally {
+      setIsPublishing(false);
     }
   }
 
-  const href =
-    userIsAuthor && chapter.status === chapterStatus.DRAFT
-      ? `/book/${chapter.storyId}/chapters/${chapter.id}/write`
-      : `/book/${chapter.storyId}/chapters/${chapter.id}`;
+  async function handleDelete() {
+    const label = chapter.title || "this chapter";
+    if (
+      !window.confirm(
+        isPublished
+          ? `Delete “${label}”? This published chapter will be removed permanently.`
+          : `Delete “${label}”? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const formData = new FormData();
+      formData.set("chapterId", chapter.id);
+      await DeleteChapter(formData);
+      toast.success("Chapter deleted", { position: "top-center" });
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+        { position: "top-center" },
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-3 px-4 py-3.5 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-5">
@@ -54,31 +83,40 @@ export default function MyChapterItem({
       >
         {chapter.title}
       </Link>
+
       {userIsAuthor ? (
-        <form
-          onSubmit={handleStatusSubmit}
-          className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end"
-        >
-          <input type="hidden" name="chapterId" value={chapter.id} />
-          <select
-            name="status"
-            defaultValue={status}
-            onChange={(e) => setStatus(e.target.value as StoryStatus)}
-            className="border-input bg-background text-foreground h-9 cursor-pointer rounded-lg border px-2.5 text-xs font-medium shadow-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+          <span
+            className={
+              isPublished
+                ? "rounded-full bg-emerald-500/15 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400"
+                : "rounded-full bg-muted px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground"
+            }
           >
-            <option value="DRAFT">Draft</option>
-            <option value="PUBLISHED">Published</option>
-          </select>
-          {status !== chapterStatus.PUBLISHED && (
+            {isPublished ? "Published" : "Draft"}
+          </span>
+
+          {!isPublished ? (
             <button
               type="button"
-              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 rounded-lg px-3 text-xs font-medium transition-colors"
+              onClick={handlePublish}
+              disabled={isPublishing || isDeleting}
+              className="h-9 rounded-lg bg-button px-3 text-xs font-medium text-button-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Publish
+              {isPublishing ? "Publishing…" : "Publish"}
             </button>
-          )}
-         
-        </form>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isPublishing || isDeleting}
+            aria-label={`Delete “${chapter.title || "chapter"}”`}
+            className="inline-flex size-9 items-center justify-center rounded-lg border border-transparent text-red-600 transition hover:bg-red-500/15 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-500/20 dark:hover:text-red-300"
+          >
+            <Trash2 className="size-4" strokeWidth={2} aria-hidden />
+          </button>
+        </div>
       ) : null}
     </div>
   );

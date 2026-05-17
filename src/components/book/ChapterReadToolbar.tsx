@@ -34,29 +34,33 @@ export default function ChapterReadToolbar({
 }) {
   return (
     <div className="border-b border-border/80 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-3 sm:gap-4 sm:px-6">
+      <div className="relative flex h-14 w-full items-center justify-between px-5 sm:h-16 sm:px-8 lg:px-12">
         <Link
           href="/"
-          className="shrink-0 transition-opacity hover:opacity-80"
+          className="z-10 shrink-0 transition-opacity hover:opacity-80"
           aria-label="Chapterhouse home"
         >
           <ChapterhouseLogo />
         </Link>
 
         {chapters.length > 0 ? (
-          <ChapterReadNav chapters={chapters} />
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-28 sm:px-36">
+            <div className="pointer-events-auto w-full max-w-[min(100%,16rem)] sm:max-w-xs">
+              <ChapterReadNav chapters={chapters} />
+            </div>
+          </div>
         ) : (
-          <div className="flex min-w-0 flex-1 justify-center">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <Link
               href={`/book/${storyId}/chapters`}
-              className="truncate text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline"
+              className="pointer-events-auto truncate text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline"
             >
               ← Back to chapters
             </Link>
           </div>
         )}
 
-        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+        <div className="z-10 flex shrink-0 items-center gap-0.5 sm:gap-1">
           <CommentSheet
             comments={comments}
             storyId={storyId}
