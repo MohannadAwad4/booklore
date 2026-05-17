@@ -1,26 +1,34 @@
 import { Cormorant_Garamond } from "next/font/google";
 import { cn } from "@/lib/utils";
 
+/** Edit these to rebrand the app in one place. */
+export const BRAND_NAME_ROOT = "Enki";
+export const BRAND_NAME_ACCENT = "doodle";
+export const BRAND_NAME = `${BRAND_NAME_ROOT}${BRAND_NAME_ACCENT}`;
+
+export const brandHomeAriaLabel = `${BRAND_NAME} home`;
+export const brandTagline = "Read · Write · Discover";
+
 const logoType = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
   display: "swap",
 });
 
-type ChapterhouseLogoProps = {
+type BrandWordmarkProps = {
   className?: string;
   showTagline?: boolean;
 };
 
-/** Chapterhouse wordmark — editorial serif, warm accent on “house”. */
-export function ChapterhouseLogo({
+/** Site wordmark — root in ink, accent in primary color. */
+export function BrandWordmark({
   className,
   showTagline = false,
-}: ChapterhouseLogoProps) {
+}: BrandWordmarkProps) {
   return (
     <span
       role="img"
-      aria-label="Chapterhouse"
+      aria-label={BRAND_NAME}
       className={cn(
         logoType.className,
         "inline-flex flex-col select-none",
@@ -34,7 +42,7 @@ export function ChapterhouseLogo({
             "text-[#2c1a0e] dark:text-[#f5ecd7]",
           )}
         >
-          Chapter
+          {BRAND_NAME_ROOT}
         </span>
         <span
           className={cn(
@@ -42,7 +50,7 @@ export function ChapterhouseLogo({
             "text-button",
           )}
         >
-          house
+          {BRAND_NAME_ACCENT}
         </span>
       </span>
 
@@ -53,7 +61,7 @@ export function ChapterhouseLogo({
             "tracking-[0.38em] text-[#7a5c3e] dark:text-[#b8a898]",
           )}
         >
-          Read · Write · Discover
+          {brandTagline}
         </span>
       ) : null}
     </span>

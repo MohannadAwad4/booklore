@@ -2,7 +2,7 @@ import { PenLine, SettingsIcon } from "lucide-react";
 import Link from "next/link";
 import { GetUserSession } from "@/app/api/auth/core/session";
 import { AuthNavTrigger } from "./providers/AuthModalProvider";
-import { ChapterhouseLogo } from "./chapterhouse-logo";
+import { BrandWordmark, brandHomeAriaLabel } from "./brand-wordmark";
 import ProfileDropdownMenuDynamic from "./ProfileDropdownMenuDynamic";
 
 export default async function NavigationHeader() {
@@ -14,9 +14,9 @@ export default async function NavigationHeader() {
         <Link
           href="/"
           className="group shrink-0 transition-opacity hover:opacity-80"
-          aria-label="Chapterhouse home"
+          aria-label={brandHomeAriaLabel}
         >
-          <ChapterhouseLogo />
+          <BrandWordmark />
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-3">

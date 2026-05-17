@@ -1,4 +1,8 @@
+import { BRAND_NAME } from "@/components/brand-wordmark";
+
 /** Gutendex / Project Gutenberg mirror API — https://gutendex.com/ */
+
+const GUTENDEX_USER_AGENT = `Mozilla/5.0 (compatible; ${BRAND_NAME}Classics/1.0)`;
 
 export type GutendexAuthor = {
   name: string;
@@ -77,7 +81,7 @@ export async function fetchGutenbergPlainText(url: string): Promise<
     const res = await fetch(url, {
       next: { revalidate: 3600 },
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; ChapterhouseClassics/1.0)",
+        "User-Agent": GUTENDEX_USER_AGENT,
       },
     });
     if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
@@ -105,7 +109,7 @@ export async function fetchGutenbergPlainTextFull(
     const res = await fetch(url, {
       cache: "no-store",
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; ChapterhouseClassics/1.0)",
+        "User-Agent": GUTENDEX_USER_AGENT,
       },
     });
     if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BRAND_NAME } from "@/components/brand-wordmark";
 import { GetUserSession } from "@/app/api/auth/core/session";
 import NavigationHeader from "@/components/nav_header";
 import NavigationHeaderGate from "@/components/NavigationHeaderGate";
@@ -22,8 +23,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chapterhouse",
-  description: "Read, write, and discover stories on Chapterhouse.",
+  title: BRAND_NAME,
+  description: `Read, write, and discover stories on ${BRAND_NAME}.`,
 };
 
 export default async function RootLayout({

@@ -11,7 +11,7 @@ import ChapterReadNav, {
   type ChapterReadNavItem,
 } from "@/components/ChapterReadNav";
 import { Button } from "@/components/ui/button";
-import { ChapterhouseLogo } from "@/components/chapterhouse-logo";
+import { BrandWordmark, brandHomeAriaLabel } from "@/components/brand-wordmark";
 
 export default function ChapterReadToolbar({
   chapters,
@@ -38,9 +38,9 @@ export default function ChapterReadToolbar({
         <Link
           href="/"
           className="z-10 shrink-0 transition-opacity hover:opacity-80"
-          aria-label="Chapterhouse home"
+          aria-label={brandHomeAriaLabel}
         >
-          <ChapterhouseLogo />
+          <BrandWordmark />
         </Link>
 
         {chapters.length > 0 ? (
