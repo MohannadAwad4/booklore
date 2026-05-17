@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { chapterStatus } from "@prisma/client";
 import { Trash2 } from "lucide-react";
+import { AreYouSure } from "@/components/modals/ToastIndex";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -46,33 +47,32 @@ export default function MyChapterItem({
     }
   }
 
-  async function handleDelete() {
+  function handleDelete() {
     const label = chapter.title || "this chapter";
-    if (
-      !window.confirm(
-        isPublished
-          ? `Delete “${label}”? This published chapter will be removed permanently.`
-          : `Delete “${label}”? This cannot be undone.`,
-      )
-    ) {
-      return;
-    }
+    const message = isPublished
+      ? `Delete “${label}”? This published chapter will be removed permanently.`
+      : `Delete “${label}”? This cannot be undone.`;
 
-    setIsDeleting(true);
-    try {
-      const formData = new FormData();
-      formData.set("chapterId", chapter.id);
-      await DeleteChapter(formData);
-      toast.success("Chapter deleted", { position: "top-center" });
-      router.refresh();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Something went wrong",
-        { position: "top-center" },
-      );
-    } finally {
-      setIsDeleting(false);
-    }
+    AreYouSure({
+      message,
+      onConfirm: async () => {
+        setIsDeleting(true);
+        try {
+          const formData = new FormData();
+          formData.set("chapterId", chapter.id);
+          await DeleteChapter(formData);
+          toast.success("Chapter deleted", { position: "top-center" });
+          router.refresh();
+        } catch (error) {
+          toast.error(
+            error instanceof Error ? error.message : "Something went wrong",
+            { position: "top-center" },
+          );
+        } finally {
+          setIsDeleting(false);
+        }
+      },
+    });
   }
 
   return (

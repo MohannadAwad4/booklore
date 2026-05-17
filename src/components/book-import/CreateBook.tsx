@@ -41,7 +41,7 @@ export default function CreateBook() {
   return (
     <>
       <button
-        className="bg-button text-button-foreground"
+         className="inline-flex h-9 items-center justify-center rounded-lg bg-button px-4 text-sm font-medium text-button-foreground shadow-sm transition hover:opacity-90 active:scale-[0.98]"
         type="button"
         onClick={() => setIsOpen(true)}
       >
@@ -51,13 +51,15 @@ export default function CreateBook() {
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogContent showCloseButton className="max-w-lg sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create a new book</DialogTitle>
+            <DialogTitle className="text-balance font-heading text-lg leading-tight sm:text-xl text-center font-semibold text-foreground">
+              Create Book
+            </DialogTitle>
           </DialogHeader>
-
+        
           <form
             onSubmit={handleSubmit}
             encType="multipart/form-data"
-            className="space-y-6 p-6 pt-0"
+            className="space-y-6 p-6 pt-4"
           >
             {/* Title */}
             <div>
@@ -75,7 +77,7 @@ export default function CreateBook() {
                 onChange={(e) => setTitle(e.target.value)}
                 required
                 placeholder="Enter book title"
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-button dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
               />
             </div>
 
@@ -92,7 +94,7 @@ export default function CreateBook() {
                 name="description"
                 rows={4}
                 placeholder="Short description of your book (optional)"
-                className="min-h-[100px] w-full resize-y rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-emerald-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                className="min-h-[100px] w-full resize-y rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-transparent focus:ring-2 focus:ring-button dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
               />
             </div>
 

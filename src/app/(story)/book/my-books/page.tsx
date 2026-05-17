@@ -37,12 +37,7 @@ export default async function MyBooksPage() {
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           <ImportBook />
           <CreateBook />
-          <Link
-            href="/book/create-book"
-            className="inline-flex h-9 items-center justify-center rounded-lg bg-button px-4 text-sm font-medium text-button-foreground shadow-sm transition hover:opacity-90 active:scale-[0.98]"
-          >
-            Create Book
-          </Link>
+          
         </div>
       </header>
 

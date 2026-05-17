@@ -39,7 +39,7 @@ export function ChapterhouseLogo({
         <span
           className={cn(
             "text-[1.75rem] font-bold tracking-[-0.02em] sm:text-[2rem]",
-            "text-[#9a4e12] dark:text-[#d4a574]",
+            "text-button",
           )}
         >
           house
