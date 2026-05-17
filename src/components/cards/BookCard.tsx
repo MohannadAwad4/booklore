@@ -94,7 +94,7 @@ export default function BookCard({
   };
 
   return (
-    <div className="h-full rounded-lg p-0.5 font-sans outline-none transition hover:opacity-[0.98]">
+    <div className="h-full min-w-0 rounded-lg p-0.5 font-sans outline-none transition hover:opacity-[0.98]">
       <div className="group/cover relative aspect-[2/3] w-full shrink-0 overflow-hidden rounded-xl  shadow-sm ring-1 ring-black/10 dark:from-neutral-800 dark:to-neutral-900 dark:ring-white/10">
         <Link
           href={`/book/${story.id}/chapters`}
@@ -181,9 +181,9 @@ export default function BookCard({
 
       <Link
         href={`/book/${story.id}/chapters`}
-        className="mt-0 block rounded-sm pt-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="mt-0 block min-w-0 w-full rounded-sm pt-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
-        <h3 className="ui-trending-title line-clamp-2 leading-snug hover:underline">
+        <h3 className="ui-trending-title hover:underline">
           {story.title}
         </h3>
         {story.viewsCount > 0 ? (

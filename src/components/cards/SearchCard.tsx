@@ -20,7 +20,9 @@ export default function SearchCard({ story }: { story: StoryType }) {
         )}
       </div>
       <div className="min-w-0">
-        <h3>{story.title}</h3>
+        <h3 className="line-clamp-2 text-sm font-medium leading-snug text-foreground">
+          {story.title}
+        </h3>
         <p>{story.description}</p>
       </div>
     </Link>

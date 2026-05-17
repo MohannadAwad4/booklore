@@ -114,7 +114,7 @@ export default async function ClassicsPage({
         </p>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 md:gap-5 lg:grid-cols-6 xl:grid-cols-8 xl:gap-6">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 md:gap-5 lg:grid-cols-6 xl:grid-cols-8 xl:gap-6 [&>*]:min-w-0">
         {books.map((book) => (
           <ClassicBookItem key={book.id} book={book} />
         ))}
