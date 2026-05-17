@@ -14,7 +14,10 @@ export default async function WriteChapterPage({
     return <div>Chapter not found</div>;
   }
   const user = await GetUserSession();
-  if (!user) redirect("/login");
+  if (!user) {
+    const back = `/book/${storyId}/chapters/${chapterId}/write`;
+    redirect(`/?openAuth=1&redirect=${encodeURIComponent(back)}`);
+  }
   const chapter = await prisma.chapter.findFirst({
     where: { id: chapterId, storyId },
     select: {

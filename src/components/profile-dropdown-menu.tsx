@@ -17,6 +17,7 @@ import {
   LogOutIcon,
   SettingsIcon,
   UserIcon,
+  BookOpenIcon,
 } from "lucide-react";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
@@ -57,6 +58,12 @@ export default function ProfileDropdownMenu({ user }: { user: SessionUser }) {
             <Link href={`/user/${user.id}`} className={menuLinkClass}>
               <UserIcon />
               Profile
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`/book/my-books`} className={menuLinkClass}>
+              <BookOpenIcon />
+              Library
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>

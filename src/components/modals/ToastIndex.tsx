@@ -1,8 +1,7 @@
 "use client";
 
+import { openAuthModal } from "@/lib/auth-modal-bridge";
 import { toast } from "sonner";
-
-const LOGIN_PATH = "/login";
 
 export function toastNotLoggedIn() {
   return toast.error("Not logged in", {
@@ -10,7 +9,7 @@ export function toastNotLoggedIn() {
     action: {
       label: "Log in",
       onClick: () => {
-        window.location.assign(LOGIN_PATH);
+        openAuthModal({ tab: "login" });
       },
     },
   });

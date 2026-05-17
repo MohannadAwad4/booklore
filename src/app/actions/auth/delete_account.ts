@@ -11,5 +11,5 @@ export default async function DeleteAccountAction() {
     await DeleteUserSession();
     await prisma.user.delete({ where: { id: user.id } });
     revalidatePath("/");
-    redirect("/login");
+    redirect("/?openAuth=1");
 }

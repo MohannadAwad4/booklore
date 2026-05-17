@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import {
   StoryCategory,
   StoryProgress,
+  StorySource,
   StoryStatus,
   type Prisma,
 } from "@prisma/client";
@@ -26,6 +27,7 @@ export default async function BookFeedPage({
 
   const where: Prisma.StoryWhereInput = {
     status: { not: StoryStatus.DRAFT },
+    //storySource: StorySource.USER,
   };
 
   const search = q?.trim();
@@ -96,7 +98,7 @@ export default async function BookFeedPage({
     return (
       <div className="font-sans mx-auto w-full max-w-screen-2xl space-y-4 py-4 pl-2 pr-2 sm:pl-3 sm:pr-3 md:pl-4 md:pr-4">
         <FilterSection genres={genresList} />
-        <Searchbar stories={[]} />
+        {/* <Searchbar stories={[]} /> */}
         <p className="text-muted-foreground">No published stories available.</p>
       </div>
     );
@@ -105,7 +107,7 @@ export default async function BookFeedPage({
   return (
     <div className="font-sans mx-auto w-full max-w-screen-2xl space-y-4 py-4 pl-2 pr-2 sm:pl-3 sm:pr-3 md:pl-4 md:pr-4">
       <FilterSection genres={genresList} />
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 md:gap-5 lg:grid-cols-6 xl:grid-cols-8 xl:gap-6">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 md:gap-5 lg:grid-cols-6 xl:grid-cols-8 xl:gap-6 mt-8">
         {stories.map((story) => (
           <BookCard
             key={story.id}

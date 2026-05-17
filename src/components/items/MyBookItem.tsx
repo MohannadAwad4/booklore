@@ -1,13 +1,10 @@
-"use client";
-
 import { BookCoverPlaceholder } from "@/components/media-placeholders";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { GenreListItem, StoryType } from "@/lib/types";
 import { DeleteBook } from "@/app/actions/book";
-import { useEffect, useState } from "react";
 import Form from "next/form";
 import PublishBookModal from "@/components/modals/PublishBook.modal";
+import { Trash2 } from "lucide-react";
 
 export default function MyBookItem({
   story,
@@ -16,95 +13,69 @@ export default function MyBookItem({
   story: StoryType;
   genres: GenreListItem[];
 }) {
-  const router = useRouter();
   const coverSrc = story.coverUrl?.trim() || null;
-  const [isPublishModalOpen, setIsPublishModalOpen] = useState<boolean>(false);
-  const statusClasses =
-    story.status === "PUBLISHED"
-      ? "bg-green-100 text-green-700"
-      : "bg-gray-100 text-gray-700";
-
-  // prevent scrolling when the modal is open
-  useEffect(() => {
-    if (isPublishModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isPublishModalOpen]);
+  const isPublished = story.status === "PUBLISHED";
 
   return (
-    <div>
+    <article className="group flex h-full min-h-[11rem] flex-col overflow-hidden rounded-xl border border-border/80 bg-card text-card-foreground shadow-sm ring-1 ring-black/[0.03] transition hover:border-border hover:shadow-md dark:ring-white/[0.06]">
       <Link
         href={`/book/${story.id}/chapters`}
-        className="group flex gap-4 rounded-xl border p-3 hover:bg-gray-50 transition"
+        className="flex min-h-0 flex-1 flex-col gap-3 p-4 transition-colors hover:bg-muted/30"
       >
-        <div className="relative aspect-[2/3] w-16 shrink-0 overflow-hidden rounded-lg border bg-muted">
-        {coverSrc ? (
-        <img
-          src={coverSrc}
-          alt={`${story.title} cover`}
-          className="object-contain object-center"
-          sizes="128px"
-        />
-        ) : (
-          <BookCoverPlaceholder className="size-full text-muted-foreground" />
-        )}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="truncate text-base font-semibold group-hover:underline">
+        <div className="flex gap-3">
+          <div className="relative aspect-[2/3] w-[4.5rem] shrink-0 overflow-hidden rounded-lg border border-border/60 bg-muted">
+            {coverSrc ? (
+              <img
+                src={coverSrc}
+                alt={`${story.title || "Untitled"} cover`}
+                className="size-full object-cover object-center"
+                sizes="96px"
+              />
+            ) : (
+              <BookCoverPlaceholder className="size-full text-muted-foreground" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="line-clamp-2 font-heading text-base font-semibold leading-snug tracking-tight text-foreground group-hover:underline">
               {story.title || "Untitled"}
             </h3>
+            {story.description ? (
+              <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                {story.description}
+              </p>
+            ) : (
+              <p className="mt-1.5 text-xs text-muted-foreground sm:text-sm">
+                No description yet.
+              </p>
+            )}
           </div>
-
-          {/* Optional: subtitle/description if you have it */}
-          {story.description ? (
-            <p className="mt-1 line-clamp-2 text-sm text-gray-600">
-              {story.description}
-            </p>
-          ) : (
-            <p className="mt-1 text-sm text-gray-500">No description yet.</p>
-          )}
         </div>
       </Link>
 
-      <label
-        defaultValue={story.status}
-        className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${statusClasses}`}
-      >
-        {story.status === "PUBLISHED" ? "Published" : "Draft"}
-      </label>
-      {story.status != "PUBLISHED" && (
-        <button
-          onClick={() => setIsPublishModalOpen((prev) => true)}
-          className="ml-4 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
+      <footer className="mt-auto flex items-center justify-between gap-2 border-t border-border/60 bg-muted/20 px-3 py-2.5">
+        <span
+          className={
+            isPublished
+              ? "rounded-full bg-emerald-500/15 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400"
+              : "rounded-full bg-muted px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground"
+          }
         >
-          Publish
-        </button>
-      )}
-
-      <Form action={DeleteBook} className="inline">
-        <input type="hidden" name="storyId" value={story.id} />
-        <button
-          type="submit"
-          className="ml-4 rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-200"
-        >
-          Delete Book
-        </button>
-      </Form>
-      {isPublishModalOpen && (
-        <PublishBookModal
-          story={story}
-          genres={genres}
-          onClose={() => setIsPublishModalOpen(false)}
-        />
-      )}
-    </div>
+          {isPublished ? "Published" : "Draft"}
+        </span>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {!isPublished && <PublishBookModal story={story} genres={genres} />}
+          <Form action={DeleteBook} className="inline">
+            <input type="hidden" name="storyId" value={story.id} />
+            <button
+              type="submit"
+              className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent text-red-600 transition hover:bg-red-500/15 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/20 dark:hover:text-red-300"
+              aria-label={`Delete “${story.title || "Untitled"}”`}
+            >
+              <Trash2 className="size-4" strokeWidth={2} />
+            </button>
+          </Form>
+        </div>
+      </footer>
+    </article>
   );
 }

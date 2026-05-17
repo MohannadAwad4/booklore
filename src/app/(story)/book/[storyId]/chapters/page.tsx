@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { ListOrdered, Plus, Send } from "lucide-react";
+import { ListOrdered, Plus } from "lucide-react";
 import { GetUserSession } from "@/app/api/auth/core/session";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import CreateChapter from "@/app/actions/chapter/create-chapter";
 import MyChapterItem from "@/components/items/MyChapterItem";
 import CommentThreads from "@/components/comments/CommentThreads";
-import AddBookComment from "@/app/actions/book/comment/add-book-comment";
+import BookCommentComposer from "@/components/comments/BookCommentComposer";
 import FollowButton from "@/components/buttons/FollowButton";
 import ChapterInfo from "@/components/cards/ChapterInfo";
+import { StorySource } from "@prisma/client";
 
 export default async function Chapters({
   params,
@@ -46,7 +47,9 @@ export default async function Chapters({
         where: { chapterId: null },
         orderBy: { createdAt: "asc" },
         include: {
-          user: { select: { username: true, displayName: true, avatarUrl: true } },
+          user: {
+            select: { username: true, displayName: true, avatarUrl: true },
+          },
           ...(viewerId
             ? { likes: { where: { userId: viewerId }, select: { id: true } } }
             : {}),
@@ -102,7 +105,9 @@ export default async function Chapters({
         />
 
         <main className="min-w-0 flex-1 space-y-8">
-          {!userIsAuthor && hasChapters ? (
+          {story.storySource === StorySource.USER &&
+          !userIsAuthor &&
+          hasChapters ? (
             <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0 space-y-1">
@@ -131,7 +136,10 @@ export default async function Chapters({
 
           {userIsAuthor ? (
             <section>
-              <form action={CreateChapter} className="flex flex-wrap items-center gap-3">
+              <form
+                action={CreateChapter}
+                className="flex flex-wrap items-center gap-3"
+              >
                 <input type="hidden" name="storyId" value={storyId} />
                 <button
                   type="submit"
@@ -160,7 +168,7 @@ export default async function Chapters({
                     {chapters.length === 1 ? "chapter" : "chapters"}
                   </span>
                 </div>
-                <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                <div className="max-h-[min(60vh,42rem)] overflow-y-auto overscroll-y-contain rounded-xl border border-border bg-card shadow-sm">
                   <ul className="divide-y divide-border">
                     {chapters.map((chapter) => (
                       <li key={chapter.id}>
@@ -176,30 +184,10 @@ export default async function Chapters({
               </section>
 
               <section className="space-y-4 border-t border-border pt-8">
-                <form
-                  action={AddBookComment}
-                  className="border-border/80 bg-background text-foreground flex w-full items-center gap-2 rounded-full border py-1.5 pl-4 pr-1.5 shadow-sm dark:border-border dark:bg-card sm:pl-5"
-                >
-                  <input type="hidden" name="storyId" value={storyId} />
-                  <label htmlFor="book-comment" className="sr-only">
-                    Comment
-                  </label>
-                  <textarea
-                    id="book-comment"
-                    name="content"
-                    required
-                    rows={1}
-                    placeholder="Write a comment..."
-                    className="placeholder:text-muted-foreground field-sizing-content max-h-24 min-h-0 w-full flex-1 resize-none border-0 bg-transparent py-1.5 text-sm leading-tight outline-none focus-visible:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    aria-label="Send comment"
-                    className="flex size-9 shrink-0 items-center justify-center rounded-full bg-button text-button-foreground shadow-sm transition hover:bg-button/90"
-                  >
-                    <Send className="size-3.5" strokeWidth={2.25} />
-                  </button>
-                </form>
+                <BookCommentComposer
+                  storyId={storyId}
+                  canComment={Boolean(user)}
+                />
                 <CommentThreads comments={comments} />
               </section>
             </>

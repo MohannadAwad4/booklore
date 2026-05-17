@@ -63,6 +63,13 @@ enum StoryProgress {
   HIATUS
   COMPLETE
 }
+
+/** Where the story record came from (user-written vs imported classic). */
+enum StorySource {
+  USER
+  GUTENBERG
+}
+
 enum chapterStatus {
   DRAFT
   PUBLISHED
@@ -119,6 +126,9 @@ model Follow {
 model Story {
   id          String     @id @default(uuid())
   authorId    String
+  storySource StorySource @default(USER)
+  /** Project Gutenberg / Gutendex work id when `storySource` is GUTENBERG. */
+  gutenbergId Int?       @unique
   storyType   StoryType
   storyCategory StoryCategory @default(FICTION)
   title       String

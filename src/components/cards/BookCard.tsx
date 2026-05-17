@@ -95,7 +95,7 @@ export default function BookCard({
 
   return (
     <div className="h-full rounded-lg p-0.5 font-sans outline-none transition hover:opacity-[0.98]">
-      <div className="group/cover relative aspect-[2/3] w-full shrink-0 overflow-hidden rounded-xl bg-gradient-to-b from-neutral-200 to-neutral-300 shadow-sm ring-1 ring-black/10 dark:from-neutral-800 dark:to-neutral-900 dark:ring-white/10">
+      <div className="group/cover relative aspect-[2/3] w-full shrink-0 overflow-hidden rounded-xl  shadow-sm ring-1 ring-black/10 dark:from-neutral-800 dark:to-neutral-900 dark:ring-white/10">
         <Link
           href={`/book/${story.id}/chapters`}
           className="absolute inset-0 z-0 block"

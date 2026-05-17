@@ -10,7 +10,8 @@ import {
 export const runtime = "nodejs";
 
 function loginErrorUrl(base: string, message: string): URL {
-  const u = new URL("/login", base);
+  const u = new URL("/", base);
+  u.searchParams.set("openAuth", "1");
   u.searchParams.set("error", message);
   return u;
 }

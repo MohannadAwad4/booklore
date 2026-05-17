@@ -1,12 +1,7 @@
-import Link from "next/link";
 import { GetUserSession } from "@/app/api/auth/core/session";
 import { prisma } from "@/lib/prisma";
-import Editor from "@/components/rich-text-editor";
-import CommentThreads from "@/components/comments/CommentThreads";
-import ChapterTitle from "@/components/ChapterTitle";
 import PublishedChapterDisplay from "@/components/PublishedChapterDisplay";
-import AddChapterComment from "@/app/actions/book/comment/add-chapter-comments";
-import CommentSheet from "@/components/modals/CommentSheet";
+import ChapterReadToolbar from "@/components/book/ChapterReadToolbar";
 export default async function ChapterEditPage({
   params,
 }: {
@@ -28,6 +23,7 @@ export default async function ChapterEditPage({
       content: true,
       status: true,
       chapterNumber: true,
+      likesCount: true,
     },
   });
   if (!chapter) {
@@ -36,7 +32,7 @@ export default async function ChapterEditPage({
     );
   }
   const isPublished = chapter.status === "PUBLISHED";
-  const [comments, allChapters] = await Promise.all([
+  const [comments, chapters, chapterLikeRow] = await Promise.all([
     prisma.comment.findMany({
       where: { chapterId, parentId: null },
       include: {
@@ -68,20 +64,36 @@ export default async function ChapterEditPage({
           orderBy: { chapterNumber: "asc" },
         })
       : Promise.resolve([]),
+    viewerId && isPublished
+      ? prisma.chapterLike.findUnique({
+          where: {
+            userId_chapterId: { userId: viewerId, chapterId },
+          },
+          select: { id: true },
+        })
+      : Promise.resolve(null),
   ]);
+
+  const initialChapterLiked = Boolean(chapterLikeRow);
 
   return (
     <div>
+      <div className="sticky top-0 z-30">
+        <ChapterReadToolbar
+          chapters={chapters}
+          storyId={storyId}
+          comments={comments}
+          chapterId={chapterId}
+          user={user}
+          showChapterLike={isPublished}
+          initialChapterLiked={initialChapterLiked}
+          chapterLikesCount={chapter.likesCount}
+        />
+      </div>
       <PublishedChapterDisplay
         chapter={chapter}
-        storyId={storyId}
-        chapters={allChapters}
       />
-      <CommentSheet
-        comments={comments}
-        storyId={storyId}
-        chapterId={chapterId}
-      />
+      
     </div>
   );
 }

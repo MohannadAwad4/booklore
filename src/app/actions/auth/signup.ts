@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { CreateUserSession } from "@/app/api/auth/core/session";
+import { signUpSchema } from "@/lib/validations/auth";
+import { Prisma } from "@prisma/client";
 import crypto from "crypto";
 
 function generateSalt(): string {
@@ -18,31 +20,75 @@ function hashPassword(password: string, salt: string): Promise<string> {
   });
 }
 
-export default async function SignUp(formData: FormData) {
-  const email = formData.get("email") as string;
-  const username = formData.get("username") as string;
-  const password = formData.get("password") as string;
+export type SignUpFormState = {
+  errors?: {
+    email?: string[];
+    username?: string[];
+    password?: string[];
+    _form?: string[];
+  };
+};
 
-  if (!email || !username || !password) {
-    throw new Error("Missing required fields");
-  }
-
-  const existingUser = await prisma.user.findUnique({
-    where: { email },
+export async function signUpAction(
+  _prevState: SignUpFormState,
+  formData: FormData
+): Promise<SignUpFormState> {
+  const parsed = signUpSchema.safeParse({
+    email: formData.get("email"),
+    username: formData.get("username"),
+    password: formData.get("password"),
   });
 
-  if (existingUser) {
-    throw new Error("User already exists");
+  if (!parsed.success) {
+    return { errors: parsed.error.flatten().fieldErrors };
+  }
+
+  const { email, username, password } = parsed.data;
+
+  const existingEmail = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+  if (existingEmail) {
+    return {
+      errors: { email: ["An account with this email already exists"] },
+    };
+  }
+
+  const existingUsername = await prisma.user.findUnique({
+    where: { username },
+    select: { id: true },
+  });
+  if (existingUsername) {
+    return {
+      errors: { username: ["This username is already taken"] },
+    };
   }
 
   const salt = generateSalt();
   const passwordHash = await hashPassword(password, salt);
 
-  const newUser = await prisma.user.create({
-    data: { email, username, passwordHash },
-  });
+  try {
+    const newUser = await prisma.user.create({
+      data: { email, username, passwordHash },
+    });
 
-  await CreateUserSession(newUser.id);
+    await CreateUserSession(newUser.id);
+  } catch (e) {
+    if (
+      e instanceof Prisma.PrismaClientKnownRequestError &&
+      e.code === "P2002"
+    ) {
+      return {
+        errors: {
+          _form: ["This email or username is already in use."],
+        },
+      };
+    }
+    return {
+      errors: { _form: ["Something went wrong. Please try again."] },
+    };
+  }
 
   redirect("/book/create-book");
 }

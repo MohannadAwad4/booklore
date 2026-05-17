@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { loginCredentialsSchema } from "@/lib/validations/auth";
 import crypto from "crypto";
 import { CreateUserSession } from "../core/session";
 
@@ -23,11 +24,17 @@ function verifyPassword(
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, password } = body;
+    const parsed = loginCredentialsSchema.safeParse({
+      email: body?.email,
+      password: body?.password,
+    });
 
-    if (!email || !password) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    if (!parsed.success) {
+      const first = parsed.error.issues[0]?.message ?? "Invalid input";
+      return NextResponse.json({ error: first }, { status: 400 });
     }
+
+    const { email, password } = parsed.data;
 
     const user = await prisma.user.findUnique({
       where: { email },

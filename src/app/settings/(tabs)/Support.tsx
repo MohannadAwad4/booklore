@@ -40,7 +40,7 @@ export default function Support() {
       <CardHeader className="border-b border-border pb-4">
         <CardTitle>Contact support</CardTitle>
         <CardDescription>
-          Send a message to the Lore team. We reply to the email on your
+          Send a message to the Chapterhouse team. We reply to the email on your
           account.
         </CardDescription>
       </CardHeader>

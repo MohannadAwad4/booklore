@@ -7,7 +7,7 @@ interface AddTagsProps {
 
 export default function AddTags({
   limit = 25,
-  placeholder = "Type a tag and press Enter…",
+  placeholder = "Add Tag",
   tags,
   setTags,
 }: AddTagsProps) {
@@ -52,7 +52,7 @@ export default function AddTags({
           disabled={tags.length >= limit}
           placeholder={tags.length >= limit ? `Limit reached` : placeholder}
           onKeyDown={addTag}
-          className="min-w-[10rem] flex-1 rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-border focus:bg-muted/40"
+          className="min-w-[10rem] flex-1 rounded-md bg-transparent px-2 py-1.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:bg-muted/40"
           aria-label="Add tag"
         />
       </div>

@@ -33,7 +33,10 @@ export default function CreateBookForm() {
 
       {/* Title */}
       <div>
-        <label htmlFor="create-book-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label
+          htmlFor="create-book-title"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+        >
           Title <span className="text-red-500">*</span>
         </label>
         <input
@@ -48,7 +51,10 @@ export default function CreateBookForm() {
 
       {/* Description */}
       <div>
-        <label htmlFor="create-book-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label
+          htmlFor="create-book-description"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+        >
           Description
         </label>
         <textarea

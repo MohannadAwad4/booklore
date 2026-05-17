@@ -6,7 +6,7 @@ import requireUser from "@/app/api/auth/core/require-user";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 /** Must be a domain you verified in Resend, or Resend's test sender for development. */
-const DEFAULT_RESEND_FROM = "Lore <onboarding@resend.dev>";
+const DEFAULT_RESEND_FROM = "Chapterhouse <onboarding@resend.dev>";
 
 export default async function EmailSupport(formData: FormData) {
   try {

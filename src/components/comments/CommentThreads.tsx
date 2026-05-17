@@ -3,7 +3,6 @@
 import type { CommentThread } from "@/lib/comment-thread";
 import CommentItem from "@/components/items/CommentItem";
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronUp, MessagesSquare } from "lucide-react";
 
 /** Book-level (`chapterId` omitted) or chapter-level threaded comments. */
 export default function CommentThreads({
@@ -12,7 +11,7 @@ export default function CommentThreads({
   comments: CommentThread[];
 }) {
   const [openReplies, setOpenReplies] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(comments.map((t) => [t.id, false]))
+    Object.fromEntries(comments.map((t) => [t.id, false])),
   );
 
   useEffect(() => {
@@ -35,43 +34,31 @@ export default function CommentThreads({
             <CommentItem
               comment={thread}
               framed
+              viewReplies={
+                n > 0
+                  ? {
+                      count: n,
+                      expanded,
+                      onToggle: () =>
+                        setOpenReplies((p) => ({
+                          ...p,
+                          [thread.id]: !(p[thread.id] ?? false),
+                        })),
+                    }
+                  : undefined
+              }
+              onReplySuccess={() =>
+                setOpenReplies((p) => ({ ...p, [thread.id]: true }))
+              }
             />
-            {n > 0 ? (
-              <div className="ml-0 sm:ml-1">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setOpenReplies((p) => ({
-                      ...p,
-                      [thread.id]: !(p[thread.id] ?? false),
-                    }))
-                  }
-                  aria-expanded={expanded}
-                  className="group inline-flex h-8 items-center gap-2 rounded-md px-2.5 text-xs font-medium text-foreground transition hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <MessagesSquare className="size-3.5 text-muted-foreground transition group-hover:text-foreground" />
-                  <span className="text-muted-foreground transition group-hover:text-foreground">
-                    {n} {n === 1 ? "reply" : "replies"}
-                  </span>
-                  {expanded ? (
-                    <ChevronUp className="ml-0.5 size-3.5 text-muted-foreground transition group-hover:text-foreground" />
-                  ) : (
-                    <ChevronDown className="ml-0.5 size-3.5 text-muted-foreground transition group-hover:text-foreground" />
-                  )}
-                </button>
-                {expanded ? (
-                  <ul className="mt-2 ml-3 space-y-3 border-l border-border pl-3 sm:ml-6 sm:pl-4">
-                    {thread.replies.map((reply) => (
-                      <li key={reply.id}>
-                        <CommentItem
-                          comment={reply}
-                          framed={false}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
+            {expanded && n > 0 ? (
+              <ul className="ml-3 space-y-3 border-l border-border pl-3 sm:ml-6 sm:pl-4">
+                {thread.replies.map((reply) => (
+                  <li key={reply.id}>
+                    <CommentItem comment={reply} framed={false} />
+                  </li>
+                ))}
+              </ul>
             ) : null}
           </li>
         );

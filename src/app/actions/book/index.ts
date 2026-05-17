@@ -293,3 +293,56 @@ export async function LikeStory(formData: FormData) {
   revalidatePath(`/book/${storyId}/chapters`);
   return { liked: true as const };
 }
+
+export async function LikeChapter(formData: FormData) {
+  const user = await RequireUser();
+  const chapterId = String(formData.get("chapterId") ?? "").trim();
+  if (!chapterId) {
+    throw new Error("Missing chapterId");
+  }
+
+  const chapter = await prisma.chapter.findFirst({
+    where: { id: chapterId, status: chapterStatus.PUBLISHED },
+    select: { id: true, storyId: true, likesCount: true },
+  });
+  if (!chapter) {
+    throw new Error("Chapter not found");
+  }
+
+  const existing = await prisma.chapterLike.findUnique({
+    where: { userId_chapterId: { userId: user.id, chapterId } },
+  });
+
+  if (existing) {
+    await prisma.$transaction(async (tx) => {
+      const row = await tx.chapter.findUniqueOrThrow({
+        where: { id: chapterId },
+        select: { likesCount: true },
+      });
+      await tx.chapterLike.delete({ where: { id: existing.id } });
+      await tx.chapter.update({
+        where: { id: chapterId },
+        data: {
+          likesCount: Math.max(0, row.likesCount - 1),
+        },
+      });
+    });
+    revalidatePath(`/book/${chapter.storyId}/chapters/${chapterId}`);
+    revalidatePath(`/book/${chapter.storyId}/chapters`);
+    return { liked: false as const };
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.chapterLike.create({
+      data: { userId: user.id, chapterId },
+    });
+    await tx.chapter.update({
+      where: { id: chapterId },
+      data: { likesCount: { increment: 1 } },
+    });
+  });
+
+  revalidatePath(`/book/${chapter.storyId}/chapters/${chapterId}`);
+  revalidatePath(`/book/${chapter.storyId}/chapters`);
+  return { liked: true as const };
+}

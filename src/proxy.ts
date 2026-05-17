@@ -16,7 +16,8 @@ export function proxy(request: NextRequest) {
 
   if (!sessionId) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
+    loginUrl.pathname = "/";
+    loginUrl.searchParams.set("openAuth", "1");
     loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }

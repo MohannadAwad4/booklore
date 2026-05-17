@@ -1,8 +1,12 @@
 import { load } from "cheerio";
+import { isTag, type Element as DomElement } from "domhandler";
 import { marked } from "marked";
 import mammoth from "mammoth";
 
-export type ParsedChapter = { title: string; html: string };
+export type ParsedChapter = {
+  title: string;
+  html: string;
+};
 
 export type ParsedBook = {
   title: string;
@@ -10,8 +14,10 @@ export type ParsedBook = {
   chapters: ParsedChapter[];
 };
 
-function escapeHtml(s: string): string {
-  return s
+type HeadingTag = "h1" | "h2" | "h3";
+
+function escapeHtml(value: string): string {
+  return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -19,75 +25,262 @@ function escapeHtml(s: string): string {
 }
 
 function paragraphsToHtml(text: string): string {
-  const paras = text
-    .split(/\n\n+/)
+  const paragraphs = text
+    .replace(/\r\n/g, "\n")
+    .split(/\n\s*\n+/)
     .map((p) => p.trim())
     .filter(Boolean);
-  if (paras.length === 0) return "<p></p>";
-  return paras
-    .map(
-      (p) =>
-        `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`,
-    )
+
+  if (paragraphs.length === 0) return "<p></p>";
+
+  return paragraphs
+    .map((p) => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`)
     .join("");
 }
 
-/** Split HTML into chapters: each <h1> starts a chapter (title + following siblings until next <h1>). */
-export function splitHtmlByH1(html: string, bookTitleFallback: string): ParsedBook {
+function isChapterTitle(text: string): boolean {
+  const value = text
+    .trim()
+    .replace(/^[\s"'“”‘’«»\[\(\-–—]+/u, "")
+    .replace(/[\s"'“”‘’»\]\)\.,:;]+$/u, "");
+
+  if (!value || value.length > 100) return false;
+
+  return /^(chapter|ch\.|prologue|epilogue)\b/i.test(value);
+}
+
+function chooseHeadingTag($: ReturnType<typeof load>): HeadingTag | null {
+  const h1 = $("h1").length;
+  const h2 = $("h2").length;
+  const h3 = $("h3").length;
+
+  if (h2 >= 2) return "h2";
+  if (h1 >= 2) return "h1";
+  if (h3 >= 2) return "h3";
+
+  return null;
+}
+
+function getBodyChildren($: ReturnType<typeof load>): DomElement[] {
+  const body = $("body");
+  const nodes = body.length ? body.children() : $.root().children();
+  return nodes.toArray().filter((node): node is DomElement => isTag(node));
+}
+
+function splitHtmlByHeadingTags(
+  html: string,
+  fallbackTitle: string
+): ParsedBook | null {
   const $ = load(html);
   $("script, style").remove();
 
-  const h1s = $("h1");
-  if (h1s.length === 0) {
-    const inner =
-      $("body").length > 0 ? $("body").html() ?? "" : $.root().children().toString();
-    const chapterHtml = inner.trim() ? inner : "<p></p>";
-    return {
-      title: bookTitleFallback,
-      description: null,
-      chapters: [{ title: "Chapter 1", html: chapterHtml }],
-    };
-  }
+  const tag = chooseHeadingTag($);
+  if (!tag) return null;
 
   const chapters: ParsedChapter[] = [];
-  h1s.each((i, el) => {
-    const title = $(el).text().trim() || `Chapter ${i + 1}`;
+  const headings = $(tag).toArray();
+
+  for (const heading of headings) {
+    const title = $(heading).text().trim() || `Chapter ${chapters.length + 1}`;
     const parts: string[] = [];
-    let n = $(el).next();
-    while (
-      n.length &&
-      String(n.prop("tagName") ?? "").toLowerCase() !== "h1"
-    ) {
-      parts.push($.html(n));
-      n = n.next();
+
+    let node = $(heading).next();
+
+    while (node.length) {
+      const nodeTag = String(node.prop("tagName") ?? "").toLowerCase();
+
+      if (nodeTag === tag) break;
+
+      parts.push($.html(node));
+      node = node.next();
     }
-    chapters.push({ title, html: parts.join("") || "<p></p>" });
-  });
+
+    chapters.push({
+      title,
+      html: parts.join("").trim() || "<p></p>",
+    });
+  }
+
+  if (chapters.length < 2) return null;
 
   return {
-    title: bookTitleFallback,
+    title: fallbackTitle,
     description: null,
     chapters,
   };
 }
 
-function mdToHtml(md: string): string {
-  return marked.parse(md.trim() || "<p></p>", { async: false });
+function splitHtmlByChapterParagraphs(
+  html: string,
+  fallbackTitle: string
+): ParsedBook | null {
+  const $ = load(html);
+  $("script, style").remove();
+
+  const children = getBodyChildren($);
+
+  const chapters: ParsedChapter[] = [];
+  let currentTitle = "Chapter 1";
+  let currentHtml: string[] = [];
+
+  function flushChapter() {
+    chapters.push({
+      title: currentTitle,
+      html: currentHtml.join("").trim() || "<p></p>",
+    });
+
+    currentHtml = [];
+  }
+
+  for (const child of children) {
+    const tag = child.name.toLowerCase();
+
+    if (tag === "p") {
+      const text = $(child).text().replace(/\s+/g, " ").trim();
+
+      if (isChapterTitle(text)) {
+        if (currentHtml.length > 0 || chapters.length > 0) {
+          flushChapter();
+        }
+
+        currentTitle = text;
+        continue;
+      }
+    }
+
+    currentHtml.push($.html(child));
+  }
+
+  flushChapter();
+
+  if (chapters.length < 2) return null;
+
+  return {
+    title: fallbackTitle,
+    description: null,
+    chapters,
+  };
 }
 
-/** Optional `# Book title`, optional preamble, then `## Chapter` blocks. */
-export function parseMarkdown(source: string, fallbackTitle: string): ParsedBook {
-  let s = source.replace(/^\uFEFF/, "").trim();
+function parseHtmlBook(html: string, fallbackTitle: string): ParsedBook {
+  const fromHeadings = splitHtmlByHeadingTags(html, fallbackTitle);
+  if (fromHeadings) return fromHeadings;
+
+  const fromChapterParagraphs = splitHtmlByChapterParagraphs(
+    html,
+    fallbackTitle
+  );
+
+  if (fromChapterParagraphs) return fromChapterParagraphs;
+
+  const $ = load(html);
+  $("script, style").remove();
+
+  const bodyHtml = $("body").length
+    ? $("body").html()
+    : $.root().children().toString();
+
+  return {
+    title: fallbackTitle,
+    description: null,
+    chapters: [
+      {
+        title: "Chapter 1",
+        html: bodyHtml?.trim() || "<p></p>",
+      },
+    ],
+  };
+}
+
+function splitPlainTextByChapterTitles(
+  text: string,
+  fallbackTitle: string
+): ParsedBook | null {
+  const lines = text.replace(/\r\n/g, "\n").split("\n");
+
+  const chapters: ParsedChapter[] = [];
+  let currentTitle = "Chapter 1";
+  let currentLines: string[] = [];
+
+  function flushChapter() {
+    chapters.push({
+      title: currentTitle,
+      html: paragraphsToHtml(currentLines.join("\n").trim()),
+    });
+
+    currentLines = [];
+  }
+
+  for (const line of lines) {
+    const cleanLine = line.trim();
+
+    if (isChapterTitle(cleanLine)) {
+      if (currentLines.join("").trim() || chapters.length > 0) {
+        flushChapter();
+      }
+
+      currentTitle = cleanLine;
+      continue;
+    }
+
+    currentLines.push(line);
+  }
+
+  flushChapter();
+
+  if (chapters.length < 2) return null;
+
+  return {
+    title: fallbackTitle,
+    description: null,
+    chapters,
+  };
+}
+
+export function parsePlainText(
+  source: string,
+  fallbackTitle: string
+): ParsedBook {
+  const text = source.replace(/^\uFEFF/, "");
+
+  const splitBook = splitPlainTextByChapterTitles(text, fallbackTitle);
+  if (splitBook) return splitBook;
+
+  return {
+    title: fallbackTitle,
+    description: null,
+    chapters: [
+      {
+        title: "Chapter 1",
+        html: paragraphsToHtml(text),
+      },
+    ],
+  };
+}
+
+function mdToHtml(markdown: string): string {
+  return marked.parse(markdown.trim() || "<p></p>", {
+    async: false,
+  });
+}
+
+export function parseMarkdown(
+  source: string,
+  fallbackTitle: string
+): ParsedBook {
+  let text = source.replace(/^\uFEFF/, "").trim();
   let title = fallbackTitle;
   let description: string | null = null;
 
-  const h1 = s.match(/^#\s+([^\n]+)\n*/);
-  if (h1) {
-    title = h1[1].trim();
-    s = s.slice(h1[0].length);
+  const titleMatch = text.match(/^#\s+([^\n]+)\n*/);
+
+  if (titleMatch) {
+    title = titleMatch[1].trim();
+    text = text.slice(titleMatch[0].length);
   }
 
-  const parts = s.split(/\n(?=##\s)/);
+  const parts = text.split(/\n(?=##\s+)/);
+
   let chapterParts = parts;
 
   if (parts[0] && !parts[0].trimStart().startsWith("##")) {
@@ -95,101 +288,88 @@ export function parseMarkdown(source: string, fallbackTitle: string): ParsedBook
     chapterParts = parts.slice(1);
   }
 
-  const chapters: ParsedChapter[] = [];
-  for (const part of chapterParts) {
-    const m = part.match(/^##\s+([^\n]+)(?:\n([\s\S]*))?$/);
-    if (!m) continue;
-    chapters.push({
-      title: m[1].trim(),
-      html: mdToHtml(m[2] ?? ""),
-    });
-  }
+  const chapters: ParsedChapter[] = chapterParts
+    .map((part) => {
+      const match = part.match(/^##\s+([^\n]+)(?:\n([\s\S]*))?$/);
+      if (!match) return null;
+
+      return {
+        title: match[1].trim(),
+        html: mdToHtml(match[2] ?? ""),
+      };
+    })
+    .filter((chapter): chapter is ParsedChapter => chapter !== null);
 
   if (chapters.length === 0) {
-    chapters.push({
-      title: "Chapter 1",
-      html: mdToHtml(s),
-    });
-    description = null;
-  }
-
-  return { title, description, chapters };
-}
-
-export function parsePlainText(source: string, bookTitle: string): ParsedBook {
-  const text = source.replace(/\r\n/g, "\n").replace(/^\uFEFF/, "");
-  const blocks = text
-    .split(/\n(?=(?:Chapter|CHAPTER|CH\.)\s+[\dIVXLC]+)/i)
-    .map((b) => b.trim())
-    .filter(Boolean);
-
-  if (blocks.length <= 1) {
     return {
-      title: bookTitle,
+      title,
       description: null,
       chapters: [
         {
           title: "Chapter 1",
-          html: paragraphsToHtml(blocks[0] ?? text),
+          html: mdToHtml(text),
         },
       ],
     };
   }
 
-  const chapters: ParsedChapter[] = blocks.map((block, i) => {
-    const lines = block.split("\n");
-    const first = lines[0]?.trim() ?? "";
-    const rest = lines.slice(1).join("\n");
-    const stripped = first.replace(
-      /^(?:Chapter|CHAPTER|CH\.)\s*[\dIVXLC]+\s*[.:]?\s*/i,
-      "",
-    );
-    const chapterTitle =
-      stripped.trim() || first || `Chapter ${i + 1}`;
-    return {
-      title: chapterTitle,
-      html: paragraphsToHtml(rest),
-    };
-  });
-
-  return { title: bookTitle, description: null, chapters };
+  return {
+    title,
+    description,
+    chapters,
+  };
 }
 
 export async function parseDocxToBook(
   buffer: Buffer,
-  fallbackTitle: string,
+  fallbackTitle: string
 ): Promise<ParsedBook> {
-  const { value: html } = await mammoth.convertToHtml({ buffer });
-  return splitHtmlByH1(html, fallbackTitle);
+  const result = await mammoth.convertToHtml(
+    { buffer },
+    {
+      ignoreEmptyParagraphs: true,
+      styleMap: [
+        "p[style-name='Heading 1'] => h1:fresh",
+        "p[style-name='Heading 2'] => h2:fresh",
+        "p[style-name='Heading 3'] => h3:fresh",
+      ],
+    }
+  );
+
+  return parseHtmlBook(result.value, fallbackTitle);
 }
 
 export async function parseBookFromBuffer(
   buffer: Buffer,
   filename: string,
-  opts?: { title?: string },
+  opts?: { title?: string }
 ): Promise<ParsedBook> {
   const ext = filename.split(".").pop()?.toLowerCase() ?? "";
-  const base =
+
+  const fallbackTitle =
     opts?.title?.trim() ||
-    filename.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim() ||
+    filename
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[-_]/g, " ")
+      .trim() ||
     "Imported book";
 
   if (ext === "docx") {
-    return parseDocxToBook(buffer, base);
+    return parseDocxToBook(buffer, fallbackTitle);
   }
 
   const text = buffer.toString("utf8");
 
   if (ext === "md" || ext === "markdown") {
-    return parseMarkdown(text, base);
+    return parseMarkdown(text, fallbackTitle);
   }
 
   if (ext === "html" || ext === "htm") {
-    return splitHtmlByH1(text, base);
+    return parseHtmlBook(text, fallbackTitle);
   }
 
   if (ext === "txt") {
-    return parsePlainText(text, base);
+    return parsePlainText(text, fallbackTitle);
   }
 
   throw new Error(`Unsupported file type: .${ext || "unknown"}`);

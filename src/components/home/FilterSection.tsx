@@ -1,5 +1,6 @@
 "use client";
 import { Children, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Filter, Search } from "lucide-react";
 import { StoryCategory, StoryProgress } from "@prisma/client";
@@ -278,6 +279,12 @@ export default function FilterSection({ genres }: { genres: GenreListItem[] }) {
       >
         <Filter className="size-4 shrink-0" strokeWidth={2} />
       </button>
+      <Link
+        href="/classics"
+        className="border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground inline-flex h-9 shrink-0 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors"
+      >
+        Classics
+      </Link>
     </form>
   );
 }

@@ -27,7 +27,7 @@ export default function Account() {
       <CardHeader className="border-b border-border pb-4">
         <CardTitle>Profile</CardTitle>
         <CardDescription>
-          Your public name and sign-in email for Lore.
+          Your public name and sign-in email for Chapterhouse.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 pt-2">

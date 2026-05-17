@@ -1,3 +1,4 @@
+
 import {
   Sheet,
   SheetContent,
@@ -5,9 +6,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { MessageCircle } from "lucide-react";
 import CommentThreads from "../comments/CommentThreads";
 import type { CommentThread } from "@/lib/comment-thread";
-import AddChapterComment from "@/app/actions/book/comment/add-chapter-comments";
+import ChapterCommentComposer from "@/components/comments/ChapterCommentComposer";
 import { cn } from "@/lib/utils";
 
 export default function CommentSheet({
@@ -22,7 +25,15 @@ export default function CommentSheet({
   return (
     <Sheet modal={false}>
       <SheetTrigger asChild>
-        <button type="button">Open</button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-9 shrink-0 rounded-full"
+          aria-label="Open comments"
+        >
+          <MessageCircle className="size-5 stroke-[2]" />
+        </Button>
       </SheetTrigger>
       <SheetContent
         overlayClassName="pointer-events-none"
@@ -34,26 +45,7 @@ export default function CommentSheet({
         <SheetHeader className="shrink-0 border-b border-border px-4 py-3 pr-14">
           <SheetTitle>Comments</SheetTitle>
         </SheetHeader>
-        <form
-          action={AddChapterComment}
-          className="shrink-0 space-y-2 border-b border-border px-4 py-3"
-        >
-          <input type="hidden" name="chapterId" value={chapterId} />
-          <input type="hidden" name="storyId" value={storyId} />
-          <textarea
-            required
-            name="content"
-            placeholder="Add a comment"
-            rows={3}
-            className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
-          <button
-            type="submit"
-            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
-          >
-            Add Comment
-          </button>
-        </form>
+        <ChapterCommentComposer storyId={storyId} chapterId={chapterId} />
         <div
           className={cn(
             "min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3",
