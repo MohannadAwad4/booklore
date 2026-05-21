@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { listGenresForPicker } from "@/lib/genres-db";
 import { prisma } from "@/lib/prisma";
 import { GetUserSession } from "@/app/api/auth/core/session";
 import Link from "next/link";
@@ -22,10 +23,7 @@ export default async function MyBooksPage() {
         createdAt: "desc",
       },
     }),
-    prisma.genre.findMany({
-      select: { id: true, name: true, slug: true },
-      orderBy: { name: "asc" },
-    }),
+    listGenresForPicker(),
   ]);
 
   return (

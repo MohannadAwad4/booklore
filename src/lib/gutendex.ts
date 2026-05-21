@@ -1,8 +1,14 @@
 import { BRAND_NAME } from "@/components/brand-wordmark";
+import { unstable_cache } from "next/cache";
 
 /** Gutendex / Project Gutenberg mirror API — https://gutendex.com/ */
 
 const GUTENDEX_USER_AGENT = `Mozilla/5.0 (compatible; ${BRAND_NAME}Classics/1.0)`;
+const GUTENDEX_BASE = "https://gutendex.com/books/";
+
+export const GUTENDEX_PAGE_SIZE = 32;
+/** Public Gutendex search often takes several seconds; fail fast instead of hanging. */
+export const GUTENDEX_FETCH_TIMEOUT_MS = 20_000;
 
 export type GutendexAuthor = {
   name: string;
@@ -120,12 +126,70 @@ export async function fetchGutenbergPlainTextFull(
   }
 }
 
+export type GutendexListResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: GutendexClassicBook[];
+};
+
+export type GutendexListResult =
+  | { ok: true; data: GutendexListResponse }
+  | { ok: false; error: string; timedOut?: boolean };
+
+async function fetchGutendexBookListUncached(
+  page: number,
+  search: string,
+): Promise<GutendexListResult> {
+  const params = new URLSearchParams({
+    copyright: "false",
+    page: String(page),
+  });
+  if (search) {
+    params.set("search", search);
+  }
+
+  try {
+    const res = await fetch(`${GUTENDEX_BASE}?${params.toString()}`, {
+      next: { revalidate: 3600 },
+      headers: { "User-Agent": GUTENDEX_USER_AGENT },
+      signal: AbortSignal.timeout(GUTENDEX_FETCH_TIMEOUT_MS),
+    });
+    if (!res.ok) {
+      return { ok: false, error: "Could not load books from Gutendex." };
+    }
+    const data = (await res.json()) as GutendexListResponse;
+    return { ok: true, data };
+  } catch (err) {
+    const timedOut =
+      err instanceof Error &&
+      (err.name === "TimeoutError" || err.name === "AbortError");
+    return {
+      ok: false,
+      timedOut,
+      error: timedOut
+        ? "Gutendex took too long to respond. Try again in a moment."
+        : "Could not load books from Gutendex.",
+    };
+  }
+}
+
+/** Cached list/search — repeat queries within an hour skip the slow external round-trip. */
+export function fetchGutendexBookList(page: number, search: string) {
+  return unstable_cache(
+    () => fetchGutendexBookListUncached(page, search),
+    ["gutendex-list", String(page), search],
+    { revalidate: 3600 },
+  )();
+}
+
 export async function fetchGutendexBook(
   id: number
 ): Promise<GutendexClassicBook | null> {
   try {
-    const res = await fetch(`https://gutendex.com/books/${id}/`, {
+    const res = await fetch(`${GUTENDEX_BASE}${id}/`, {
       next: { revalidate: 3600 },
+      headers: { "User-Agent": GUTENDEX_USER_AGENT },
     });
     if (!res.ok) return null;
     return (await res.json()) as GutendexClassicBook;

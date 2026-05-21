@@ -15,6 +15,7 @@ type BookFeedPageProps = {
   searchParams: Promise<{
     q?: string;
     category?: string;
+    type?: string;
     progress?: string;
     genres?: string;
   }>;
@@ -23,7 +24,7 @@ type BookFeedPageProps = {
 export default async function BookFeedPage({
   searchParams,
 }: BookFeedPageProps) {
-  const { q, category, progress, genres } = await searchParams;
+  const { q, category, type, progress, genres } = await searchParams;
 
   const where: Prisma.StoryWhereInput = {
     status: { not: StoryStatus.DRAFT },
@@ -43,6 +44,17 @@ export default async function BookFeedPage({
     category?.toLocaleUpperCase() === StoryCategory.NON_FICTION
   ) {
     where.storyCategory = category.toLocaleUpperCase() as StoryCategory;
+  }
+
+  const storyType = type?.toLocaleUpperCase();
+  if (
+    storyType === "BOOK" ||
+    storyType === "POEM" ||
+    storyType === "SHORT_STORY" ||
+    storyType === "SCREENPLAY" ||
+    storyType === "COMIC"
+  ) {
+    where.storyType = storyType as Prisma.StoryWhereInput["storyType"];
   }
 
   if (
@@ -68,7 +80,6 @@ export default async function BookFeedPage({
     prisma.story.findMany({
       where,
       orderBy: { createdAt: "desc" },
-     
     }),
     prisma.genre.findMany({
       select: { id: true, name: true, slug: true },

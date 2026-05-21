@@ -31,3 +31,30 @@ export function AreYouSure({message, onConfirm}: {message: string, onConfirm: ()
     },
   });
 }
+
+export function ConfirmPublish({
+  message,
+  onConfirm,
+}: {
+  message: string;
+  onConfirm: () => void;
+}) {
+  return toast.info(message, {
+    position: "top-center",
+    duration: 60_000,
+    cancel: {
+      label: "Cancel",
+      onClick: () => {},
+    },
+    action: {
+      label: "Confirm",
+      onClick: () => {
+        onConfirm();
+      },
+    },
+    actionButtonStyle: {
+      background: "var(--button)",
+      color: "var(--button-foreground)",
+    },
+  });
+}

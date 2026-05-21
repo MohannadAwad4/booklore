@@ -16,6 +16,14 @@ export const StoryCategory = {
   NON_FICTION: "NON_FICTION",
 } as const;
 
+export const StoryType = {
+  BOOK: "BOOK",
+  POEM: "POEM",
+  SHORT_STORY: "SHORT_STORY",
+  SCREENPLAY: "SCREENPLAY",
+  COMIC: "COMIC",
+} as const;
+
 export const StoryProgress = {
   ONGOING: "ONGOING",
   HIATUS: "HIATUS",
@@ -28,5 +36,6 @@ export type StoryStatusValue =
   (typeof StoryStatus)[keyof typeof StoryStatus];
 export type StoryCategoryValue =
   (typeof StoryCategory)[keyof typeof StoryCategory];
+export type StoryTypeValue = (typeof StoryType)[keyof typeof StoryType];
 export type StoryProgressValue =
   (typeof StoryProgress)[keyof typeof StoryProgress];

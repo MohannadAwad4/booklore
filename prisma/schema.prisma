@@ -45,6 +45,7 @@ enum StoryType {
   POEM
   SHORT_STORY
   SCREENPLAY
+  COMIC
 }
 enum StoryCategory {
   FICTION

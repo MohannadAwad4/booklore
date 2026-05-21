@@ -39,11 +39,13 @@ export default function CommentSheet({
         overlayClassName="pointer-events-none"
         preventDismissOnOutside
         className={cn(
-          "flex h-full max-h-dvh flex-col gap-0 overflow-hidden p-0 sm:max-w-md"
+          "!top-14 !h-[calc(100dvh-3.5rem)] flex flex-col gap-0 overflow-hidden border-t border-border p-0 sm:!top-16 sm:!h-[calc(100dvh-4rem)] sm:max-w-md"
         )}
       >
-        <SheetHeader className="shrink-0 border-b border-border px-4 py-3 pr-14">
-          <SheetTitle>Comments</SheetTitle>
+        <SheetHeader className="shrink-0 border-b border-border px-5 py-5 pr-14">
+          <SheetTitle className="font-serif text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+            Comments
+          </SheetTitle>
         </SheetHeader>
         <ChapterCommentComposer storyId={storyId} chapterId={chapterId} />
         <div

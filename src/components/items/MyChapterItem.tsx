@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { chapterStatus } from "@/lib/enums";
 import { Trash2 } from "lucide-react";
-import { AreYouSure } from "@/components/modals/ToastIndex";
+import { AreYouSure, ConfirmPublish } from "@/components/modals/ToastIndex";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -28,7 +28,7 @@ export default function MyChapterItem({
       ? `/book/${chapter.storyId}/chapters/${chapter.id}/write`
       : `/book/${chapter.storyId}/chapters/${chapter.id}`;
 
-  async function handlePublish() {
+  async function publishChapter() {
     setIsPublishing(true);
     try {
       const formData = new FormData();
@@ -45,6 +45,13 @@ export default function MyChapterItem({
     } finally {
       setIsPublishing(false);
     }
+  }
+
+  function handlePublish() {
+    ConfirmPublish({
+      message: `Once a chapter is published, it cannot be changed back to a draft.`,
+      onConfirm: publishChapter,
+    });
   }
 
   function handleDelete() {
@@ -107,7 +114,7 @@ export default function MyChapterItem({
             </button>
           ) : null}
 
-          <button
+          {/* <button
             type="button"
             onClick={handleDelete}
             disabled={isPublishing || isDeleting}
@@ -115,7 +122,7 @@ export default function MyChapterItem({
             className="inline-flex size-9 items-center justify-center rounded-lg border border-transparent text-red-600 transition hover:bg-red-500/15 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-500/20 dark:hover:text-red-300"
           >
             <Trash2 className="size-4" strokeWidth={2} aria-hidden />
-          </button>
+          </button> */}
         </div>
       ) : null}
     </div>

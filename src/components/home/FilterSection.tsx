@@ -3,9 +3,17 @@ import { Children, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Filter, Search } from "lucide-react";
-import type { StoryCategoryValue, StoryProgressValue } from "@/lib/enums";
+import type {
+  StoryCategoryValue,
+  StoryProgressValue,
+  StoryTypeValue,
+} from "@/lib/enums";
 import type { GenreListItem } from "@/lib/types";
-import { categoryOptions, progressOptions } from "@/lib/options";
+import {
+  categoryOptions,
+  progressOptions,
+  storyTypeOptions,
+} from "@/lib/options";
 import Select, {
   MultiValue,
   components,
@@ -17,6 +25,7 @@ import type { GroupBase } from "react-select";
 type GenreOption = { value: string; label: string };
 
 type CategoryOption = (typeof categoryOptions)[number];
+type StoryTypeOption = (typeof storyTypeOptions)[number];
 type ProgressOption = (typeof progressOptions)[number];
 
 function createThemedFilterSelectStyles<
@@ -157,6 +166,10 @@ const themedCategoryStyles = createThemedFilterSelectStyles<
   CategoryOption,
   false
 >();
+const themedStoryTypeStyles = createThemedFilterSelectStyles<
+  StoryTypeOption,
+  false
+>();
 const themedProgressStyles = createThemedFilterSelectStyles<
   ProgressOption,
   false
@@ -166,6 +179,7 @@ const genreSelectStyles = createThemedFilterSelectStyles<GenreOption, true>();
 export default function FilterSection({ genres }: { genres: GenreListItem[] }) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<StoryCategoryValue | null>(null);
+  const [storyType, setStoryType] = useState<StoryTypeValue | null>(null);
   const [progress, setProgress] = useState<StoryProgressValue | null>(null);
   const [genreSelection, setGenreSelection] = useState<MultiValue<GenreOption>>(
     []
@@ -176,6 +190,7 @@ export default function FilterSection({ genres }: { genres: GenreListItem[] }) {
     if (
       !search.trim() &&
       !category &&
+      !storyType &&
       !progress &&
       genreSelection.length === 0
     ) {
@@ -185,6 +200,7 @@ export default function FilterSection({ genres }: { genres: GenreListItem[] }) {
     const sp = new URLSearchParams();
     if (search.trim()) sp.set("q", search.trim());
     if (category) sp.set("category", category.toLocaleLowerCase());
+    if (storyType) sp.set("type", storyType.toLocaleLowerCase());
     if (progress) sp.set("progress", progress.toLocaleLowerCase());
     const base = sp.toString();
     let url = base ? `/?${base}` : "/";
@@ -231,6 +247,24 @@ export default function FilterSection({ genres }: { genres: GenreListItem[] }) {
           }
           onChange={(opt) =>
             setCategory(opt ? (opt.value as StoryCategoryValue) : null)
+          }
+        />
+      </div>
+      <div className="w-[9.5rem] shrink-0">
+        <Select<StoryTypeOption, false>
+          instanceId="feed-filter-story-type"
+          aria-label="Story type"
+          placeholder="Story type"
+          isClearable
+          styles={themedStoryTypeStyles}
+          options={storyTypeOptions}
+          value={
+            storyType
+              ? (storyTypeOptions.find((o) => o.value === storyType) ?? null)
+              : null
+          }
+          onChange={(opt) =>
+            setStoryType(opt ? (opt.value as StoryTypeValue) : null)
           }
         />
       </div>

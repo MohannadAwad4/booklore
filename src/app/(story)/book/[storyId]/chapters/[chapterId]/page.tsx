@@ -1,9 +1,11 @@
 import { GetUserSession } from "@/app/api/auth/core/session";
 import { prisma } from "@/lib/prisma";
-import PublishedChapterDisplay from "@/components/PublishedChapterDisplay";
 import ChapterReadToolbar from "@/components/book/ChapterReadToolbar";
+import ChapterSheet from "@/components/modals/ChapterSheet";
 import { redirect } from "next/navigation";
 import { chapterStatus } from "@/lib/enums";
+import PublishedChapterDisplay from "@/components/PublishedChapterDisplay";
+import { ReaderModeProvider } from "@/components/book/ReaderModeProvider";
 export default async function ChapterEditPage({
   params,
 }: {
@@ -27,6 +29,12 @@ export default async function ChapterEditPage({
       chapterNumber: true,
       likesCount: true,
       authorId: true,
+      story: {
+        select: {
+          title: true,
+          coverUrl: true,
+        },
+      },
     },
   });
   if (!chapter) {
@@ -84,25 +92,36 @@ export default async function ChapterEditPage({
   ]);
 
   const initialChapterLiked = Boolean(chapterLikeRow);
+  const nextChapter =
+    chapters.find((item) => item.chapterNumber > chapter.chapterNumber) ?? null;
 
   return (
-    <div>
-      <div className="sticky top-0 z-30">
-        <ChapterReadToolbar
-          chapters={chapters}
+    <ReaderModeProvider>
+      <div>
+        <div className="sticky top-0 z-30">
+          <ChapterReadToolbar
+            storyTitle={chapter.story.title}
+            comments={comments}
+            showChapterLike={isPublished}
+            initialChapterLiked={initialChapterLiked}
+            chapterLikesCount={chapter.likesCount}
+          />
+        </div>
+        {chapters.length > 0 ? (
+          <div className="fixed left-0 top-24 z-20">
+            <ChapterSheet
+              chapterId={chapterId}
+              storyId={storyId}
+              chapters={chapters}
+            />
+          </div>
+        ) : null}
+        <PublishedChapterDisplay
+          chapter={chapter}
           storyId={storyId}
-          comments={comments}
-          chapterId={chapterId}
-          user={user}
-          showChapterLike={isPublished}
-          initialChapterLiked={initialChapterLiked}
-          chapterLikesCount={chapter.likesCount}
+          nextChapter={nextChapter}
         />
       </div>
-      <PublishedChapterDisplay
-        chapter={chapter}
-      />
-      
-    </div>
+    </ReaderModeProvider>
   );
 }
